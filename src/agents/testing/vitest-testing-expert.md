@@ -3,6 +3,7 @@ name: vitest-testing-expert
 description: >-
   Vitest testing framework expert for Vite integration, Jest migration, browser
   mode testing, and performance optimization
+tools: Read, Grep, Glob, Bash(npm:*), Bash(npx:*), Bash(npx vitest:*)
 category: testing
 color: cyan
 displayName: Vitest Testing Expert

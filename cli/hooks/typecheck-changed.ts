@@ -39,8 +39,10 @@ export class TypecheckChangedHook extends BaseHook {
 
     // Run TypeScript compiler
     const config = this.loadConfig();
-    const command = config.command ?? `${packageManager.exec} tsc --noEmit`;
-    const result = await this.execCommand(command, [], {
+    const command = config.command ?? `${packageManager.exec} ${packageManager.execArgs.join(' ')} tsc --noEmit`;
+    const result = config.command !== undefined
+      ? await this.execCommand(config.command, [], { cwd: projectRoot })
+      : await this.execCommand(packageManager.exec, [...packageManager.execArgs, 'tsc', '--noEmit'], {
       cwd: projectRoot,
     });
 

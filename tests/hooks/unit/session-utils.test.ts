@@ -26,11 +26,18 @@ const mockFs = vi.mocked(fs);
 describe('SessionTracker', () => {
   let tracker: SessionTracker;
   const mockHomeDir = '/mock/home';
-  
+  // Use valid UUID format to match session-utils.ts UUID validation
+  const testSessionId = '12345678-1234-1234-1234-123456789abc';
+  const newSessionId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+  const existingSessionId = '11111111-2222-3333-4444-555555555555';
+  const flagSessionId = '66666666-7777-8888-9999-000000000000';
+  const emptySessionId = 'aaaa0000-0000-0000-0000-000000000001';
+  const falseFlagSessionId = 'bbbb0000-0000-0000-0000-000000000002';
+
   beforeEach(() => {
     // Setup os.homedir mock
     vi.mocked(os.homedir).mockReturnValue(mockHomeDir);
-    
+
     tracker = new SessionTracker('test-hook');
     vi.clearAllMocks();
   });
@@ -42,49 +49,44 @@ describe('SessionTracker', () => {
   describe('getSessionData', () => {
     it('should return session data when file exists', async () => {
       // Purpose: Verify session state can be retrieved when file exists
-      const sessionId = 'test-session';
-      const sessionData = { 
-        sessionId, 
-        timestamp: '2024-01-01T00:00:00.000Z', 
-        customData: 'test' 
+      const sessionData = {
+        sessionId: testSessionId,
+        timestamp: '2024-01-01T00:00:00.000Z',
+        customData: 'test'
       };
 
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readFile.mockResolvedValue(JSON.stringify(sessionData));
 
-      const result = await tracker.getSessionData(sessionId);
-      
+      const result = await tracker.getSessionData(testSessionId);
+
       expect(result).toEqual(sessionData);
       expect(mockFs.access).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-test-session.json')
+        path.join(mockHomeDir, '.claudekit', `test-hook-session-${testSessionId}.json`)
       );
       expect(mockFs.readFile).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-test-session.json'),
+        path.join(mockHomeDir, '.claudekit', `test-hook-session-${testSessionId}.json`),
         'utf-8'
       );
     });
 
     it('should return null when session file does not exist', async () => {
       // Purpose: Ensure graceful handling when session doesn't exist
-      const sessionId = 'nonexistent-session';
-      
       mockFs.access.mockRejectedValue(new Error('File not found'));
 
-      const result = await tracker.getSessionData(sessionId);
-      
+      const result = await tracker.getSessionData(testSessionId);
+
       expect(result).toBeNull();
       expect(mockFs.readFile).not.toHaveBeenCalled();
     });
 
     it('should return null when file is corrupted', async () => {
       // Purpose: Handle corrupted JSON files gracefully
-      const sessionId = 'corrupted-session';
-      
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readFile.mockResolvedValue('invalid json {');
 
-      const result = await tracker.getSessionData(sessionId);
-      
+      const result = await tracker.getSessionData(testSessionId);
+
       expect(result).toBeNull();
     });
   });
@@ -92,38 +94,36 @@ describe('SessionTracker', () => {
   describe('setSessionData', () => {
     it('should create directory and write session data', async () => {
       // Purpose: Verify session data can be stored with proper file structure
-      const sessionId = 'new-session';
       const data = { customField: 'value' };
 
       mockFs.mkdir.mockResolvedValue(undefined);
       mockFs.writeFile.mockResolvedValue(undefined);
 
-      await tracker.setSessionData(sessionId, data);
+      await tracker.setSessionData(newSessionId, data);
 
       expect(mockFs.mkdir).toHaveBeenCalledWith(
         path.join(mockHomeDir, '.claudekit'),
         { recursive: true }
       );
-      
+
       expect(mockFs.writeFile).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-new-session.json'),
+        path.join(mockHomeDir, '.claudekit', `test-hook-session-${newSessionId}.json`),
         expect.stringContaining('"customField": "value"')
       );
       expect(mockFs.writeFile).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-new-session.json'),
+        path.join(mockHomeDir, '.claudekit', `test-hook-session-${newSessionId}.json`),
         expect.stringMatching(/"timestamp": "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z"/)
       );
       expect(mockFs.writeFile).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-new-session.json'),
-        expect.stringContaining('"sessionId": "new-session"')
+        path.join(mockHomeDir, '.claudekit', `test-hook-session-${newSessionId}.json`),
+        expect.stringContaining(`"sessionId": "${newSessionId}"`)
       );
     });
 
     it('should preserve existing data when updating', async () => {
       // Purpose: Ensure partial updates don't lose existing session data
-      const sessionId = 'existing-session';
-      const existingData = { 
-        sessionId,
+      const existingData = {
+        sessionId: existingSessionId,
         timestamp: '2024-01-01T00:00:00.000Z',
         existingField: 'keep-this'
       };
@@ -134,15 +134,15 @@ describe('SessionTracker', () => {
       mockFs.readFile.mockResolvedValue(JSON.stringify(existingData));
       mockFs.writeFile.mockResolvedValue(undefined);
 
-      await tracker.setSessionData(sessionId, updateData);
+      await tracker.setSessionData(existingSessionId, updateData);
 
       // Should write merged data with updated timestamp
       const writeCall = mockFs.writeFile.mock.calls[0];
       const writtenData = JSON.parse(writeCall?.[1] as string);
-      
+
       expect(writtenData).toMatchObject({
         ...updateData,
-        sessionId,
+        sessionId: existingSessionId,
         timestamp: expect.any(String),
       });
       expect(writtenData.timestamp).not.toBe(existingData.timestamp);
@@ -152,62 +152,57 @@ describe('SessionTracker', () => {
   describe('hasSessionFlag and setSessionFlag', () => {
     it('should set and retrieve boolean flags', async () => {
       // Purpose: Verify flag-based session state management works correctly
-      const sessionId = 'flag-session';
-      
+
       // Mock empty initial state
       mockFs.access.mockRejectedValue(new Error('File not found'));
       mockFs.mkdir.mockResolvedValue(undefined);
       mockFs.writeFile.mockResolvedValue(undefined);
 
       // Set flag
-      await tracker.setSessionFlag(sessionId, 'testFlag', true);
-      
+      await tracker.setSessionFlag(flagSessionId, 'testFlag', true);
+
       // Mock reading back the flag
       const flagData = {
-        sessionId,
+        sessionId: flagSessionId,
         timestamp: '2024-01-01T00:00:00.000Z',
         testFlag: true,
       };
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readFile.mockResolvedValue(JSON.stringify(flagData));
 
-      const hasFlag = await tracker.hasSessionFlag(sessionId, 'testFlag');
-      
+      const hasFlag = await tracker.hasSessionFlag(flagSessionId, 'testFlag');
+
       expect(hasFlag).toBe(true);
     });
 
     it('should return false for unset flags', async () => {
       // Purpose: Ensure undefined flags are handled as false
-      const sessionId = 'empty-session';
-      
       mockFs.access.mockRejectedValue(new Error('File not found'));
 
-      const hasFlag = await tracker.hasSessionFlag(sessionId, 'undefinedFlag');
-      
+      const hasFlag = await tracker.hasSessionFlag(emptySessionId, 'undefinedFlag');
+
       expect(hasFlag).toBe(false);
     });
 
     it('should allow setting flag to false', async () => {
       // Purpose: Verify flags can be explicitly disabled
-      const sessionId = 'false-flag-session';
-      
       mockFs.access.mockRejectedValue(new Error('File not found'));
       mockFs.mkdir.mockResolvedValue(undefined);
       mockFs.writeFile.mockResolvedValue(undefined);
 
-      await tracker.setSessionFlag(sessionId, 'disabledFlag', false);
-      
+      await tracker.setSessionFlag(falseFlagSessionId, 'disabledFlag', false);
+
       // Mock reading back the flag
       const flagData = {
-        sessionId,
+        sessionId: falseFlagSessionId,
         timestamp: '2024-01-01T00:00:00.000Z',
         disabledFlag: false,
       };
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readFile.mockResolvedValue(JSON.stringify(flagData));
 
-      const hasFlag = await tracker.hasSessionFlag(sessionId, 'disabledFlag');
-      
+      const hasFlag = await tracker.hasSessionFlag(falseFlagSessionId, 'disabledFlag');
+
       expect(hasFlag).toBe(false);
     });
   });
@@ -217,17 +212,18 @@ describe('SessionTracker', () => {
       // Purpose: Verify cleanup of expired session files works correctly
       const oldTime = Date.now() - 8 * 24 * 60 * 60 * 1000; // 8 days ago
       const recentTime = Date.now() - 2 * 24 * 60 * 60 * 1000; // 2 days ago
-      
+
+      // Use UUID-format session IDs in filenames to match validation
       const mockFiles = [
-        'test-hook-session-old.json',
-        'test-hook-session-recent.json',
+        'test-hook-session-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeffff.json',
+        'test-hook-session-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.json',
         'other-file.txt', // Should be ignored
       ];
-      
+
       // Type assertion to bypass TypeScript overload complexity for testing
       // @ts-expect-error - Complex fs.readdir overloads make typing difficult in tests
       mockFs.readdir.mockResolvedValue(mockFiles);
-      
+
       // Create proper Stats objects with all required properties
       interface MockStats {
         isFile(): boolean;
@@ -256,7 +252,7 @@ describe('SessionTracker', () => {
         ctime: Date;
         birthtime: Date;
       }
-      
+
       const createMockStats = (mtimeMs: number): MockStats => ({
         isFile: (): boolean => true,
         isDirectory: (): boolean => false,
@@ -284,11 +280,10 @@ describe('SessionTracker', () => {
         ctime: new Date(mtimeMs),
         birthtime: new Date(mtimeMs),
       });
-      
+
       mockFs.stat
         .mockResolvedValueOnce(createMockStats(oldTime))
-        .mockResolvedValueOnce(createMockStats(recentTime))
-        .mockResolvedValueOnce(createMockStats(oldTime)); // This won't be reached
+        .mockResolvedValueOnce(createMockStats(recentTime));
       mockFs.unlink.mockResolvedValue(undefined);
 
       await tracker.cleanOldSessions(7 * 24 * 60 * 60 * 1000); // 7 days
@@ -297,7 +292,7 @@ describe('SessionTracker', () => {
       expect(mockFs.stat).toHaveBeenCalledTimes(2); // Only for matching files
       expect(mockFs.unlink).toHaveBeenCalledTimes(1);
       expect(mockFs.unlink).toHaveBeenCalledWith(
-        path.join(mockHomeDir, '.claudekit', 'test-hook-session-old.json')
+        path.join(mockHomeDir, '.claudekit', 'test-hook-session-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeffff.json')
       );
     });
 

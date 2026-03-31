@@ -46,9 +46,14 @@ export class TestProjectHook extends BaseHook {
     const config = this.loadConfig();
     const testCommand = config.command ?? packageManager.test;
 
+    // Split testCommand into binary + args for spawn (e.g., "pnpm test" -> ["pnpm", "test"])
+    const commandParts = testCommand.split(/\s+/);
+    const cmd = commandParts[0] as string;
+    const cmdArgs = commandParts.slice(1);
+
     // Use a timeout just under Claude Code's 60s limit, or from config
     const timeout = config.timeout ?? 55000; // 55 seconds (under Claude Code's 60s limit)
-    const result = await this.execCommand(testCommand, [], {
+    const result = await this.execCommand(cmd, cmdArgs, {
       cwd: projectRoot,
       timeout,
     });

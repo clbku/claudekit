@@ -1,7 +1,7 @@
 ---
 description: Run quality checks and automatically fix issues using concurrent agents
 category: workflow
-allowed-tools: Bash, Task, TodoWrite, Read, Edit, MultiEdit
+allowed-tools: Bash(npm:*), Bash(npx:*), Bash(node:*), Bash(git stash:*), Bash(git diff:*), Bash(git status:*), Bash(git --no-pager:*), Bash(cat:*), Bash(echo:*), Task, TodoWrite, Read, Edit, MultiEdit
 ---
 
 # Validate and Fix

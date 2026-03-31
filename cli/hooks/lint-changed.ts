@@ -98,17 +98,16 @@ export class LintChangedHook extends BaseHook {
     packageManager: PackageManager
   ): Promise<ExecResult> {
     const config = this.loadConfig();
-    const biomeCommand = config.command ?? `${packageManager.exec} biome`;
 
-    // Build Biome arguments
-    const biomeArgs = ['check', `"${filePath}"`];
+    // Build Biome arguments — pass filePath directly, no shell quoting needed with spawn
+    const biomeArgs = [...packageManager.execArgs, 'biome', 'check', filePath];
 
     // Add fix flag if configured
     if (config.fix === true) {
       biomeArgs.push('--write');
     }
 
-    return await this.execCommand(biomeCommand, biomeArgs, {
+    return await this.execCommand(packageManager.exec, biomeArgs, {
       cwd: projectRoot,
       timeout: config.timeout ?? 30000,
     });
@@ -120,10 +119,9 @@ export class LintChangedHook extends BaseHook {
     packageManager: PackageManager
   ): Promise<ExecResult> {
     const config = this.loadConfig();
-    const eslintCommand = config.command ?? `${packageManager.exec} eslint`;
 
-    // Build ESLint arguments
-    const eslintArgs: string[] = [];
+    // Build ESLint arguments — pass filePath directly, no shell quoting needed with spawn
+    const eslintArgs: string[] = [...packageManager.execArgs, 'eslint'];
 
     // Add file extensions if configured
     if (config.extensions !== undefined) {
@@ -136,9 +134,9 @@ export class LintChangedHook extends BaseHook {
     }
 
     // Add the file path
-    eslintArgs.push(`"${filePath}"`);
+    eslintArgs.push(filePath);
 
-    return await this.execCommand(eslintCommand, eslintArgs, {
+    return await this.execCommand(packageManager.exec, eslintArgs, {
       cwd: projectRoot,
       timeout: config.timeout ?? 30000,
     });

@@ -321,15 +321,15 @@ pre_compute_release_data() {
 
     # Get commit information
     if [ "$LAST_TAG" != "HEAD" ]; then
-        COMMIT_COUNT=$(git rev-list ${LAST_TAG}..HEAD --count)
+        COMMIT_COUNT=$(git rev-list "${LAST_TAG}..HEAD" --count)
         echo "Found $COMMIT_COUNT commits since $LAST_TAG"
 
         # Get recent commits (limit to avoid long output)
-        RECENT_COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --max-count=20)
+        RECENT_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --max-count=20)
 
         # Get file changes with smart filtering
-        DIFF_STAT=$(git diff ${LAST_TAG}..HEAD --stat)
-        ALL_CHANGED_FILES=$(git diff ${LAST_TAG}..HEAD --name-only)
+        DIFF_STAT=$(git diff "${LAST_TAG}..HEAD" --stat)
+        ALL_CHANGED_FILES=$(git diff "${LAST_TAG}..HEAD" --name-only)
 
         # Smart filtering: Include code files, exclude documentation/planning
         # First check if we have too many files to process efficiently
@@ -353,13 +353,13 @@ pre_compute_release_data() {
             if [ "$CODE_FILE_COUNT" -gt 50 ]; then
                 echo "Too many code files changed ($CODE_FILE_COUNT) - providing file list only"
                 DIFF_FULL="[DIFF TOO LARGE - $CODE_FILE_COUNT code files changed: $(echo "$CODE_CHANGED_FILES" | head -20 | tr '\n' ' ')...]"
-                INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD -- [filename]' to check individual files: $(echo "$CODE_CHANGED_FILES" | head -10 | tr '\n' ' ')"
+                INCLUDE_DIFF_INSTRUCTION="Use 'git diff \"${LAST_TAG}..HEAD\" -- [filename]' to check individual files: $(echo "$CODE_CHANGED_FILES" | head -10 | tr '\n' ' ')"
             else
                 # Create filtered diff for smaller changesets
                 FILTERED_DIFF=""
                 for file in $CODE_CHANGED_FILES; do
                     if [ -f "$file" ]; then
-                        FILTERED_DIFF="$FILTERED_DIFF$(git diff ${LAST_TAG}..HEAD -- "$file" 2>/dev/null || echo "")"
+                        FILTERED_DIFF="$FILTERED_DIFF$(git diff "${LAST_TAG}..HEAD" -- "$file" 2>/dev/null || echo "")"
                     fi
                 done
 
@@ -372,7 +372,7 @@ pre_compute_release_data() {
                     if [ "$DIFF_LINES" -gt 3000 ] || [ "$DIFF_CHARS" -gt 80000 ]; then
                         echo "Even filtered diff is large - providing file list only"
                         DIFF_FULL="[DIFF TOO LARGE - Code files changed: $(echo "$CODE_CHANGED_FILES" | tr '\n' ' ')]"
-                        INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD -- [filename]' to check individual files: $(echo "$CODE_CHANGED_FILES" | head -10 | tr '\n' ' ')"
+                        INCLUDE_DIFF_INSTRUCTION="Use 'git diff \"${LAST_TAG}..HEAD\" -- [filename]' to check individual files: $(echo "$CODE_CHANGED_FILES" | head -10 | tr '\n' ' ')"
                     else
                         DIFF_FULL="$FILTERED_DIFF"
                         INCLUDE_DIFF_INSTRUCTION=""
@@ -385,7 +385,7 @@ pre_compute_release_data() {
         else
             if [ "$FILE_COUNT" -gt 200 ]; then
                 DIFF_FULL="[DIFF TOO LARGE - $FILE_COUNT total files changed - analysis skipped for performance]"
-                INCLUDE_DIFF_INSTRUCTION="Use 'git diff ${LAST_TAG}..HEAD --stat' to see file changes and 'git log ${LAST_TAG}..HEAD --oneline' for commit history"
+                INCLUDE_DIFF_INSTRUCTION="Use 'git diff \"${LAST_TAG}..HEAD\" --stat' to see file changes and 'git log \"${LAST_TAG}..HEAD\" --oneline' for commit history"
             else
                 DIFF_FULL="[NO CODE CHANGES - Only documentation/planning files changed]"
                 INCLUDE_DIFF_INSTRUCTION="No source code changes found. This release contains only documentation updates."
@@ -584,7 +584,7 @@ show_release_summary() {
 
 # Function to cleanup temporary files
 cleanup() {
-    rm -f /tmp/stm-*.txt /tmp/stm-*.md
+    rm -f /tmp/stm-"$$"*.txt /tmp/stm-"$$"*.md
 }
 
 # Function to handle script interruption

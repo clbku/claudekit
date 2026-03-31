@@ -47,6 +47,7 @@ describe('LintProjectHook', () => {
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },
@@ -77,7 +78,7 @@ describe('LintProjectHook', () => {
 
       const result = await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('npx eslint . --ext .js,.jsx,.ts,.tsx', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'], {
         cwd: '/test/project',
         timeout: 60000,
       });
@@ -94,7 +95,8 @@ describe('LintProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'pnpm',
-          exec: 'pnpm dlx',
+          exec: 'pnpm',
+          execArgs: ['dlx'],
           run: 'pnpm run',
           test: 'pnpm test',
         },
@@ -103,8 +105,8 @@ describe('LintProjectHook', () => {
       await hook.execute(context);
 
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'pnpm dlx eslint . --ext .js,.jsx,.ts,.tsx',
-        [],
+        'pnpm',
+        ['dlx', 'eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'],
         { cwd: '/test/project', timeout: 60000 }
       );
     });
@@ -117,7 +119,8 @@ describe('LintProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'yarn',
-          exec: 'yarn dlx',
+          exec: 'yarn',
+          execArgs: ['dlx'],
           run: 'yarn',
           test: 'yarn test',
         },
@@ -126,8 +129,8 @@ describe('LintProjectHook', () => {
       await hook.execute(context);
 
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'yarn dlx eslint . --ext .js,.jsx,.ts,.tsx',
-        [],
+        'yarn',
+        ['dlx', 'eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'],
         { cwd: '/test/project', timeout: 60000 }
       );
     });
@@ -139,12 +142,14 @@ describe('LintProjectHook', () => {
       mockExecCommand.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
       mockGetHookConfig.mockReturnValue({
         command: 'pnpm eslint . --fix',
+        timeout: 60000,
       });
       const context = createMockContext();
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('pnpm eslint . --fix', [], {
+      // runEslint uses packageManager.exec and constructs args from execArgs
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'], {
         cwd: '/test/project',
         timeout: 60000,
       });
@@ -248,7 +253,7 @@ describe('LintProjectHook', () => {
         '.eslintrc.json',
         '/different/project/path'
       );
-      expect(mockExecCommand).toHaveBeenCalledWith('npx eslint . --ext .js,.jsx,.ts,.tsx', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'], {
         cwd: '/different/project/path',
         timeout: 60000,
       });
@@ -264,11 +269,11 @@ describe('LintProjectHook', () => {
       const result = await hook.execute(context);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecCommand).toHaveBeenCalledWith('npx biome', ['check', '.'], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['biome', 'check', '.'], {
         cwd: '/test/project',
         timeout: 60000,
       });
-      expect(mockExecCommand).toHaveBeenCalledWith('npx eslint . --ext .js,.jsx,.ts,.tsx', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'], {
         cwd: '/test/project',
         timeout: 60000,
       });

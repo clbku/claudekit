@@ -61,6 +61,12 @@ async function updateConfig(configKey: string, options: UpdateOptions): Promise<
       throw new Error(`Invalid JSON in --config: ${error}`);
     }
   } else if (options.file !== undefined && options.file !== '') {
+    const resolvedFile = path.resolve(options.file);
+    const projectRoot = process.cwd();
+    if (!resolvedFile.startsWith(path.resolve(projectRoot))) {
+      console.error('Error: File must be within the project directory');
+      process.exit(1);
+    }
     const content = await fs.readFile(options.file, 'utf8');
     try {
       updates = JSON.parse(content);

@@ -1,7 +1,7 @@
 ---
 name: loopback-expert
 description: Expert in LoopBack 4 Node.js framework handling dependency injection, repository patterns, authentication, database integration, and deployment. Use PROACTIVELY for LoopBack dependency injection errors, database connection issues, authentication problems, or framework architecture questions. Detects project setup and adapts approach.
-tools: Read, Edit, MultiEdit, Bash, Grep, Glob
+tools: Read, Grep, Glob, Bash(npm:*), Bash(npx:*), Edit, MultiEdit, Write
 category: framework
 color: blue
 displayName: LoopBack 4 Expert

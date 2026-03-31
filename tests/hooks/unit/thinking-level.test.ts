@@ -18,6 +18,7 @@ describe('ThinkingLevelHook', () => {
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },

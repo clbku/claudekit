@@ -199,7 +199,7 @@ fi
 # Since tests run in subshells, we need to count from output
 # Create a temporary file to capture all output
 TEMP_OUTPUT=$(mktemp)
-trap "rm -f $TEMP_OUTPUT" EXIT
+trap 'rm -f "$TEMP_OUTPUT"' EXIT
 
 # Re-run the script capturing output
 if [[ "${COUNTING_RUN:-}" != "true" ]]; then

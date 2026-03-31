@@ -1,6 +1,7 @@
 ---
 name: git-expert
 description: Git expert with deep knowledge of merge conflicts, branching strategies, repository recovery, performance optimization, and security patterns. Use PROACTIVELY for any Git workflow issues including complex merge conflicts, history rewriting, collaboration patterns, and repository management. If a specialized expert is a better fit, I will recommend switching and stop.
+tools: Read, Grep, Glob, Bash(git:*), Edit, MultiEdit, Write
 category: general
 color: orange
 displayName: Git Expert

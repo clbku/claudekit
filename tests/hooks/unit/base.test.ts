@@ -65,6 +65,7 @@ describe('BaseHook', () => {
       vi.spyOn(utils, 'detectPackageManager').mockResolvedValue({
         name: 'npm',
         exec: 'npx',
+        execArgs: [],
         run: 'npm run',
         test: 'npm test',
       });
@@ -81,6 +82,7 @@ describe('BaseHook', () => {
       const expectedPackageManager = {
         name: 'pnpm' as const,
         exec: 'pnpm dlx',
+        execArgs: ['dlx'],
         run: 'pnpm run',
         test: 'pnpm test',
       };
@@ -106,6 +108,7 @@ describe('BaseHook', () => {
       vi.spyOn(utils, 'detectPackageManager').mockResolvedValue({
         name: 'npm',
         exec: 'npx',
+        execArgs: [],
         run: 'npm run',
         test: 'npm test',
       });
@@ -127,6 +130,7 @@ describe('BaseHook', () => {
       vi.spyOn(utils, 'detectPackageManager').mockResolvedValue({
         name: 'npm',
         exec: 'npx',
+        execArgs: [],
         run: 'npm run',
         test: 'npm test',
       });

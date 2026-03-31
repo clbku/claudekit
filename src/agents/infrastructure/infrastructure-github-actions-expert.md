@@ -1,6 +1,7 @@
 ---
 name: github-actions-expert
 description: GitHub Actions CI/CD pipeline optimization, workflow automation, custom actions development, and security best practices for scalable software delivery
+tools: Read, Grep, Glob, Bash, Edit, MultiEdit, Write
 category: devops
 color: blue
 displayName: GitHub Actions Expert

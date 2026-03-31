@@ -19,6 +19,9 @@ import type { HookContext } from '../../cli/hooks/base.js';
 // Constants for tests
 const TEST_PROJECT_ROOT = '/test/project';
 
+// Default session ID for tests (valid UUID format)
+const DEFAULT_SESSION_ID = '00000000-0000-0000-0000-000000000001';
+
 // Mock modules before imports
 vi.mock('node:util', () => ({
   promisify: (fn: unknown): unknown => fn,
@@ -26,6 +29,7 @@ vi.mock('node:util', () => ({
 
 vi.mock('node:child_process', () => ({
   exec: vi.fn(),
+  spawn: vi.fn(),
 }));
 
 vi.mock('node:fs/promises', () => ({
@@ -43,6 +47,7 @@ vi.mock('node:fs/promises', () => ({
 
 vi.mock('../../cli/hooks/utils.js', () => ({
   checkToolAvailable: vi.fn(),
+  execCommand: vi.fn(),
   formatError: vi.fn(
     (title: string, details: string, instructions: string[]) =>
       `${title}: ${details}\n${instructions.join('\n')}`
@@ -59,7 +64,7 @@ vi.mock('node:os', () => ({
 
 // Import after mocking
 import { CodebaseMapHook, CodebaseMapUpdateHook } from '../../cli/hooks/codebase-map.js';
-import { checkToolAvailable } from '../../cli/hooks/utils.js';
+import { checkToolAvailable, execCommand } from '../../cli/hooks/utils.js';
 import { getHookConfig } from '../../cli/utils/claudekit-config.js';
 
 // Helper functions for test setup
@@ -70,6 +75,7 @@ function createMockContext(overrides: Partial<HookContext> = {}): HookContext {
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },
@@ -78,7 +84,7 @@ function createMockContext(overrides: Partial<HookContext> = {}): HookContext {
 }
 
 function createUserPromptContext(
-  sessionId: string = 'test-session-123',
+  sessionId: string = DEFAULT_SESSION_ID,
   overrides: Partial<HookContext> = {}
 ): HookContext {
   return {
@@ -92,6 +98,7 @@ function createUserPromptContext(
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },
@@ -104,7 +111,7 @@ describe('CodebaseMapHook', () => {
   let mockContext: HookContext;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-  let mockExecAsync: Mock;
+  let mockExecCommand: Mock;
   let mockCheckToolAvailable: Mock;
   let mockGetHookConfig: Mock;
   let mockFsAccess: Mock;
@@ -117,9 +124,8 @@ describe('CodebaseMapHook', () => {
     vi.clearAllMocks();
 
     // Dynamically import to get mocked version
-    const cp = await import('node:child_process');
     const fs = await import('node:fs/promises');
-    mockExecAsync = cp.exec as unknown as Mock;
+    mockExecCommand = execCommand as Mock;
     mockCheckToolAvailable = checkToolAvailable as Mock;
     mockGetHookConfig = getHookConfig as Mock;
     mockFsAccess = fs.access as unknown as Mock;
@@ -154,19 +160,16 @@ describe('CodebaseMapHook', () => {
       const result = await hook.execute(userContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).not.toHaveBeenCalled();
+      expect(mockExecCommand).not.toHaveBeenCalled();
       expect(consoleLogSpy).not.toHaveBeenCalled();
     });
 
     it('should run scan and format commands when codebase-map is installed', async () => {
       const userContext = createUserPromptContext();
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({
-          stdout: '# Project Structure\ncli/index.ts > cli/utils',
-          stderr: '',
-        }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '# Project Structure\ncli/index.ts > cli/utils', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(userContext);
 
@@ -183,7 +186,7 @@ describe('CodebaseMapHook', () => {
       );
       expect(jsonResponse?.hookSpecificOutput?.additionalContext).toContain('# Project Structure');
       expect(mockFsWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('codebase-map-session-test-session-123.json'),
+        expect.stringContaining(`codebase-map-session-${DEFAULT_SESSION_ID}.json`),
         expect.stringContaining('"contextProvided": true')
       );
     });
@@ -191,22 +194,22 @@ describe('CodebaseMapHook', () => {
     it('should use custom format from config', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
       mockGetHookConfig.mockReturnValueOnce({ format: 'markdown' });
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: '# Markdown Output', stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '# Markdown Output', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith('codebase-map format --format markdown', {
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['format', '--format', 'markdown'], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
-        maxBuffer: 10 * 1024 * 1024,
-      });
+      }));
     });
 
     it('should handle errors gracefully', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync.mockRejectedValueOnce(new Error('Scan failed')); // scan fails
+      // Simulate scan failure via execCommand rejection
+      mockExecCommand.mockRejectedValueOnce(new Error('Scan failed'));
 
       const result = await hook.execute(mockContext);
 
@@ -216,9 +219,9 @@ describe('CodebaseMapHook', () => {
     // Additional edge case tests for CodebaseMapHook
     it('should handle empty output from format command', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }); // format with empty output
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }); // format with empty output
 
       const result = await hook.execute(mockContext);
 
@@ -228,9 +231,9 @@ describe('CodebaseMapHook', () => {
 
     it('should handle whitespace-only output from format command', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: '   \n  \t  ', stderr: '' }); // format with whitespace
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '   \n  \t  ', stderr: '', exitCode: 0 }); // format with whitespace
 
       const result = await hook.execute(mockContext);
 
@@ -240,8 +243,8 @@ describe('CodebaseMapHook', () => {
 
     it('should handle scan success but format failure', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan succeeds
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan succeeds
         .mockRejectedValueOnce(new Error('Format failed')); // format fails
 
       const result = await hook.execute(mockContext);
@@ -252,38 +255,37 @@ describe('CodebaseMapHook', () => {
     it('should handle invalid format configuration', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
       mockGetHookConfig.mockReturnValueOnce({ format: 'invalid-format' });
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: 'output', stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: 'output', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith('codebase-map format --format invalid-format', {
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['format', '--format', 'invalid-format'], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
-        maxBuffer: 10 * 1024 * 1024,
-      });
+      }));
     });
 
     it('should handle include/exclude filtering configuration', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockGetHookConfig.mockReturnValueOnce({ 
+      mockGetHookConfig.mockReturnValueOnce({
         include: ['src/**', 'lib/**'],
         exclude: ['**/*.test.ts', '**/*.spec.ts']
       });
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: 'output', stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: 'output', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        'codebase-map format --format auto --include "src/**" --include "lib/**" --exclude "**/*.test.ts" --exclude "**/*.spec.ts"', 
-        {
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['format', '--format', 'auto', '--include', 'src/**', '--include', 'lib/**', '--exclude', '**/*.test.ts', '--exclude', '**/*.spec.ts'],
+        expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
-          maxBuffer: 10 * 1024 * 1024,
-        }
+        })
       );
     });
 
@@ -291,9 +293,9 @@ describe('CodebaseMapHook', () => {
       const largeOutput = 'x'.repeat(1024 * 1024); // 1MB of content
       const userContext = createUserPromptContext();
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: largeOutput, stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: largeOutput, stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(userContext);
 
@@ -320,16 +322,17 @@ describe('CodebaseMapHook', () => {
         exclude: ['**/*.test.ts'],
         format: 'json',
       });
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: '{"files": []}', stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '{"files": []}', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith('codebase-map scan', expect.any(Object));
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        'codebase-map format --format json --include "src/**" --exclude "**/*.test.ts"',
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
     });
@@ -337,14 +340,12 @@ describe('CodebaseMapHook', () => {
 
   describe('UserPromptSubmit functionality', () => {
     it('should provide context on first user prompt', async () => {
-      const userContext = createUserPromptContext('test-session-123');
+      const sessionId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+      const userContext = createUserPromptContext(sessionId);
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({
-          stdout: '# Project Structure\ncli/index.ts > cli/utils',
-          stderr: '',
-        }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }) // scan
+        .mockResolvedValueOnce({ stdout: '# Project Structure\ncli/index.ts > cli/utils', stderr: '', exitCode: 0 }); // format
 
       const result = await hook.execute(userContext);
 
@@ -360,13 +361,14 @@ describe('CodebaseMapHook', () => {
         '📍 Codebase Map (loaded once per session):'
       );
       expect(mockFsWriteFile).toHaveBeenCalledWith(
-        expect.stringContaining('codebase-map-session-test-session-123.json'),
+        expect.stringContaining(`codebase-map-session-${sessionId}.json`),
         expect.stringContaining('"contextProvided": true')
       );
     });
 
     it('should skip if context already provided for session', async () => {
-      const userContext = createUserPromptContext('existing-session');
+      const sessionId = '11111111-2222-3333-4444-555555555555';
+      const userContext = createUserPromptContext(sessionId);
       mockCheckToolAvailable.mockResolvedValueOnce(true);
 
       // Mock session file exists with context already provided
@@ -375,14 +377,14 @@ describe('CodebaseMapHook', () => {
         JSON.stringify({
           contextProvided: true,
           timestamp: '2024-01-01T00:00:00.000Z',
-          sessionId: 'existing-session',
+          sessionId,
         })
       );
 
       const result = await hook.execute(userContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).not.toHaveBeenCalled();
+      expect(mockExecCommand).not.toHaveBeenCalled();
       expect(consoleLogSpy).not.toHaveBeenCalled();
     });
 
@@ -391,9 +393,9 @@ describe('CodebaseMapHook', () => {
         payload: { hook_event_name: 'UserPromptSubmit', prompt: 'test' },
       });
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: 'output', stderr: '' });
+      mockExecCommand
+        .mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 })
+        .mockResolvedValueOnce({ stdout: 'output', stderr: '', exitCode: 0 });
 
       const result = await hook.execute(contextWithoutSessionId);
 
@@ -422,7 +424,7 @@ describe('CodebaseMapHook', () => {
 describe('CodebaseMapUpdateHook', () => {
   let hook: CodebaseMapUpdateHook;
   let mockContext: HookContext;
-  let mockExecAsync: Mock;
+  let mockExecCommand: Mock;
   let mockFsAccess: Mock;
   let mockCheckToolAvailable: Mock;
   let mockGetHookConfig: Mock;
@@ -433,9 +435,8 @@ describe('CodebaseMapUpdateHook', () => {
     vi.resetAllMocks();
 
     // Dynamically import to get mocked versions
-    const cp = await import('node:child_process');
     const fs = await import('node:fs/promises');
-    mockExecAsync = cp.exec as unknown as Mock;
+    mockExecCommand = execCommand as Mock;
     mockFsAccess = fs.access as unknown as Mock;
     mockCheckToolAvailable = checkToolAvailable as Mock;
     mockGetHookConfig = getHookConfig as Mock;
@@ -567,7 +568,7 @@ describe('CodebaseMapUpdateHook', () => {
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).not.toHaveBeenCalled();
+      expect(mockExecCommand).not.toHaveBeenCalled();
     });
 
     it('should skip update if codebase-map is not installed', async () => {
@@ -600,7 +601,7 @@ describe('CodebaseMapUpdateHook', () => {
 
     it('should update the index when all conditions are met', async () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync.mockResolvedValueOnce({ stdout: '', stderr: '' }); // update
+      mockExecCommand.mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 }); // update
       mockFsAccess.mockResolvedValueOnce(undefined);
 
       const result = await hook.execute(mockContext);
@@ -612,12 +613,12 @@ describe('CodebaseMapUpdateHook', () => {
         TEST_PROJECT_ROOT
       );
       expect(mockFsAccess).toHaveBeenCalledWith('/test/project/.codebasemap');
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        'codebase-map update "/test/project/src/index.ts"',
-        {
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['update', '/test/project/src/index.ts'],
+        expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
-          maxBuffer: 10 * 1024 * 1024,
-        }
+        })
       );
     });
 
@@ -625,7 +626,8 @@ describe('CodebaseMapUpdateHook', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      mockExecAsync.mockRejectedValueOnce(new Error('Update failed')); // update fails
+      // Simulate execCommand rejection
+      mockExecCommand.mockRejectedValueOnce(new Error('Update failed'));
       mockFsAccess.mockResolvedValueOnce(undefined);
 
       const result = await hook.execute(mockContext);
@@ -649,7 +651,7 @@ describe('CodebaseMapUpdateHook', () => {
     it('should handle concurrent execution scenarios', async () => {
       mockCheckToolAvailable.mockResolvedValue(true);
       mockFsAccess.mockResolvedValue(undefined);
-      mockExecAsync.mockResolvedValue({ stdout: '', stderr: '' });
+      mockExecCommand.mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 });
 
       // Simulate concurrent executions
       const promises = [
@@ -685,17 +687,17 @@ describe('CodebaseMapUpdateHook', () => {
       mockCheckToolAvailable.mockResolvedValueOnce(true);
       mockGetHookConfig.mockReturnValueOnce({}); // No custom command
       mockFsAccess.mockResolvedValueOnce(undefined);
-      mockExecAsync.mockResolvedValueOnce({ stdout: '', stderr: '' });
+      mockExecCommand.mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 });
 
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        'codebase-map update "/test/project/src/index.ts"',
-        {
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['update', '/test/project/src/index.ts'],
+        expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
-          maxBuffer: 10 * 1024 * 1024,
-        }
+        })
       );
     });
 
@@ -705,7 +707,7 @@ describe('CodebaseMapUpdateHook', () => {
       // Test failed update
       mockCheckToolAvailable.mockResolvedValueOnce(true);
       mockFsAccess.mockResolvedValueOnce(undefined);
-      mockExecAsync.mockRejectedValueOnce(new Error('Update failed'));
+      mockExecCommand.mockRejectedValueOnce(new Error('Update failed'));
 
       await hook.execute(mockContext);
 
@@ -719,15 +721,14 @@ describe('CodebaseMapUpdateHook', () => {
 
       mockCheckToolAvailable.mockResolvedValueOnce(true);
       mockFsAccess.mockResolvedValueOnce(undefined);
-      mockExecAsync.mockResolvedValueOnce({ stdout: '', stderr: '' });
+      mockExecCommand.mockResolvedValueOnce({ stdout: '', stderr: '', exitCode: 0 });
 
       const result = await hook.execute(contextWithLongPath);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalledWith(`codebase-map update "${longPath}"`, {
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['update', longPath], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
-        maxBuffer: 10 * 1024 * 1024,
-      });
+      }));
     });
   });
 

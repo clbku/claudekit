@@ -19,6 +19,7 @@
     },
     "./package.json": "./package.json"
   },
+  "files": ["dist/", "bin/", "src/agents/", "src/commands/", "README.md", "LICENSE", "CHANGELOG.md"],
   "scripts": {
     "build": "npm run clean && npm run build:main && npm run build:hooks && npm run build:esm && npm run build:types",
     "validate:deps": "node scripts/validate-dependencies.js",
@@ -57,7 +58,7 @@
     "format": "prettier --write \"cli/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"cli/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run lint && npm run typecheck",
     "release:patch": "./scripts/prepare-release.sh --type patch",
     "release:minor": "./scripts/prepare-release.sh --type minor",
     "release:major": "./scripts/prepare-release.sh --type major",

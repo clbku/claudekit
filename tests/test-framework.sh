@@ -185,7 +185,7 @@ cleanup_test() {
     # Run any registered cleanup functions
     if [[ ${#CLEANUP_FUNCTIONS[@]} -gt 0 ]]; then
         for cleanup_func in "${CLEANUP_FUNCTIONS[@]}"; do
-            $cleanup_func || true
+            "$cleanup_func" || true
         done
     fi
     

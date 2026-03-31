@@ -60,14 +60,23 @@ validate_json_blocks() {
                 if echo "$json_content" | jq -e '.hooks."codebase-map"' >/dev/null 2>&1; then
                     # Validate against TypeScript schema
                     if command -v node >/dev/null 2>&1 && [[ -f "dist/types/claudekit-config.js" ]]; then
-                        node -e "
+                        echo "$json_content" | node -e "
                             const { validateClaudekitConfig } = require('./dist/types/claudekit-config.js');
-                            const config = JSON.parse('$json_content');
-                            const result = validateClaudekitConfig(config);
-                            if (!result.valid) {
-                                console.error('Schema validation failed:', result.errors);
-                                process.exit(1);
-                            }
+                            let data = '';
+                            process.stdin.on('data', chunk => data += chunk);
+                            process.stdin.on('end', () => {
+                                try {
+                                    const config = JSON.parse(data);
+                                    const result = validateClaudekitConfig(config);
+                                    if (!result.valid) {
+                                        console.error('Schema validation failed:', result.errors);
+                                        process.exit(1);
+                                    }
+                                } catch (e) {
+                                    console.error('JSON parse error:', e.message);
+                                    process.exit(1);
+                                }
+                            });
                         " 2>/dev/null || log_error "JSON at line $json_start_line doesn't match ClaudekitConfig schema"
                     fi
                 fi

@@ -7,7 +7,7 @@ source "$(dirname "$0")/../test-framework.sh"
 test_suite_start "Setup Command Agent Integration"
 
 # Setup test environment
-TEST_DIR="/tmp/claudekit-test-$$"
+TEST_DIR=$(mktemp -d)
 mkdir -p "$TEST_DIR"
 cd "$TEST_DIR"
 

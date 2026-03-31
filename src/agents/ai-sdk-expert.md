@@ -1,6 +1,7 @@
 ---
 name: ai-sdk-expert
 description: Expert in Vercel AI SDK v5 handling streaming, model integration, tool calling, hooks, state management, edge runtime, prompt engineering, and production patterns. Use PROACTIVELY for any AI SDK implementation, streaming issues, provider integration, or AI application architecture. Detects project setup and adapts approach.
+tools: Read, Grep, Glob, Bash(npm:*), Bash(npx:*), Edit, MultiEdit, Write
 category: framework
 displayName: AI SDK by Vercel (v5)
 color: blue

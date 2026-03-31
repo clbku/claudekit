@@ -3,11 +3,7 @@
  * Used by both codebase-map and codebase-context hooks
  */
 
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
-import { checkToolAvailable } from './utils.js';
-
-const execAsync = promisify(exec);
+import { checkToolAvailable, execCommand } from './utils.js';
 
 export interface CodebaseMapConfig {
   include?: string[];
@@ -44,38 +40,37 @@ export async function generateCodebaseMap(options: CodebaseMapOptions): Promise<
 
   try {
     // First, scan the project to create/update the index (scan everything for comprehensive index)
-    const scanCommand = 'codebase-map scan';
-    await execAsync(scanCommand, {
+    await execCommand('codebase-map', ['scan'], {
       cwd: options.projectRoot,
-      maxBuffer: 10 * 1024 * 1024,
     });
 
-    // Then format and get the result with filtering
-    let formatCommand = `codebase-map format --format ${options.format ?? 'auto'}`;
-    
+    // Then format and get the result with filtering — build args array to avoid shell injection
+    const formatArgs: string[] = ['format', '--format', options.format ?? 'auto'];
+
     // Add include patterns if specified
     if (options.include && options.include.length > 0) {
-      const includeArgs = options.include.map(pattern => `--include "${pattern}"`).join(' ');
-      formatCommand += ` ${includeArgs}`;
+      for (const pattern of options.include) {
+        formatArgs.push('--include', pattern);
+      }
     }
-    
+
     // Add exclude patterns if specified
     if (options.exclude && options.exclude.length > 0) {
-      const excludeArgs = options.exclude.map(pattern => `--exclude "${pattern}"`).join(' ');
-      formatCommand += ` ${excludeArgs}`;
+      for (const pattern of options.exclude) {
+        formatArgs.push('--exclude', pattern);
+      }
     }
-    
+
     // Debug output to show exact command being run
     if (process.env['DEBUG'] === 'true') {
-      console.error('Running codebase-map command:', formatCommand);
+      console.error('Running codebase-map command:', 'codebase-map', formatArgs.join(' '));
     }
-    
-    const { stdout } = await execAsync(formatCommand, {
+
+    const result = await execCommand('codebase-map', formatArgs, {
       cwd: options.projectRoot,
-      maxBuffer: 10 * 1024 * 1024,
     });
 
-    return { success: true, output: stdout?.trim() };
+    return { success: true, output: result.stdout.trim() };
   } catch (error) {
     return {
       success: false,
@@ -96,10 +91,8 @@ export async function updateCodebaseMap(
   }
 
   try {
-    const updateCommand = `codebase-map update "${filePath}"`;
-    await execAsync(updateCommand, {
+    await execCommand('codebase-map', ['update', filePath], {
       cwd: projectRoot,
-      maxBuffer: 10 * 1024 * 1024,
     });
     return true;
   } catch {

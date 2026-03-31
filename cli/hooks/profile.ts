@@ -328,15 +328,16 @@ async function measureHook(hookName: string): Promise<MeasureResult | null> {
     }
     
     // Execute hook using the actual CLI command with piped input
-    const { execSync } = await import('node:child_process');
+    const { execFileSync } = await import('node:child_process');
     let output = '';
     try {
       const payloadJson = JSON.stringify(testPayload);
-      // Capture both stdout and stderr (hooks output to stderr)
-      output = execSync(`echo '${payloadJson}' | claudekit-hooks run ${hookName} 2>&1`, {
+      // Pass payload via stdin instead of shell echo pipe to prevent injection
+      output = execFileSync('claudekit-hooks', ['run', hookName], {
+        input: payloadJson,
         encoding: 'utf8',
         maxBuffer: 10 * 1024 * 1024, // 10MB
-        stdio: 'pipe'
+        stdio: ['pipe', 'pipe', 'pipe']
       });
     } catch (execError: unknown) {
       // Even if command exits with non-zero, we may still have output

@@ -177,8 +177,7 @@ Before creating any STM tasks, confirm your understanding:
    - [ ] Executable permissions set correctly for hooks (755)
    - [ ] Path validation prevents directory traversal
    - [ ] Tests: All operations work on macOS/Linux with proper error handling
-   ```
-   
+
 5. **Create Task Management Entries**:
    
    ## 🚨 STOP AND READ: Common Mistake vs Correct Approach

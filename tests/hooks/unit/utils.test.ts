@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { spawn } from 'node:child_process';
 import { EventEmitter } from 'node:events';
+import { setImmediate } from 'node:timers';
 import {
   readStdin,
   findProjectRoot,
@@ -20,6 +21,7 @@ import {
 } from '../../../cli/hooks/utils.js';
 
 // Helper to create a mock spawn child process
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createMockChild(stdout = '', stderr = '', exitCode = 0, signal: string | null = null) {
   const child = new EventEmitter() as EventEmitter & {
     stdout: EventEmitter;
@@ -382,7 +384,7 @@ describe('utils', () => {
         })
       );
       // Verify the spawn was called with proper structure
-      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string>; shell?: boolean } | undefined;
+      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string>; shell: boolean } | undefined;
       expect(callArgs).toBeDefined();
       expect(callArgs?.shell).toBe(false);
       expect(callArgs?.env).toBeDefined();
@@ -418,7 +420,7 @@ describe('utils', () => {
         })
       );
       // Verify vitest env vars are NOT present for non-test commands
-      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string> } | undefined;
+      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string>; shell: boolean } | undefined;
       expect(callArgs?.env?.['CI']).toBeDefined();
       expect(callArgs?.env?.['VITEST_POOL_TIMEOUT']).toBeUndefined();
       expect(callArgs?.env?.['VITEST_POOL_FORKS']).toBeUndefined();
@@ -442,7 +444,7 @@ describe('utils', () => {
         })
       );
       // Verify vitest env vars are NOT set since command 'npm' doesn't contain 'test'
-      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string> } | undefined;
+      const callArgs = mockSpawn.mock.calls[0]?.[2] as { env: Record<string, string>; shell: boolean } | undefined;
       expect(callArgs?.env?.['VITEST_POOL_TIMEOUT']).toBeUndefined();
     });
   });

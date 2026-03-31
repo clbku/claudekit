@@ -146,6 +146,7 @@ npx tsc --extendedDiagnostics --incremental false | grep -E "Check time|Files:|L
 
 **Missing type declarations**
 - Quick fix with ambient declarations:
+
 ```typescript
 // types/ambient.d.ts
 declare module 'some-untyped-package' {

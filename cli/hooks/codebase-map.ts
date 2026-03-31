@@ -194,7 +194,7 @@ export class CodebaseMapUpdateHook extends BaseHook {
 
     try {
       // Update the specific file in the index (no filtering needed for updates)
-      await execCommand('codebase-map', ['update', filePath!], {
+      await execCommand('codebase-map', ['update', filePath as string], {
         cwd: projectRoot,
       });
 

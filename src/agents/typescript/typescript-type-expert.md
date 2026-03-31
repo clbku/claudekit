@@ -50,6 +50,7 @@ type Tail<T extends readonly unknown[]> = T extends readonly [unknown, ...infer 
 ```
 
 2. **Use type assertions for escape hatches**:
+
 ```typescript
 type SafeDeepType<T> = T extends object 
   ? T extends Function 

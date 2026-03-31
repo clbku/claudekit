@@ -1,5 +1,5 @@
 {
-  "name": "claudekit",
+  "name": "claudekit-dev",
   "version": "0.9.5",
   "description": "CLI tools for Claude Code development workflow",
   "type": "module",
@@ -19,7 +19,15 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist/", "bin/", "src/agents/", "src/commands/", "README.md", "LICENSE", "CHANGELOG.md"],
+  "files": [
+    "dist/",
+    "bin/",
+    "src/agents/",
+    "src/commands/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "npm run clean && npm run build:main && npm run build:hooks && npm run build:esm && npm run build:types",
     "validate:deps": "node scripts/validate-dependencies.js",
@@ -80,6 +88,9 @@
     "picomatch": "^4.0.3",
     "untildify": "^5.0.0",
     "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "codebase-map": "^0.6.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",

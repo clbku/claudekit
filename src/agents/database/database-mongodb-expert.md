@@ -58,6 +58,7 @@ db.collection.find({}, { arrayField: { $slice: 1 } }).forEach(doc => {
    - **Reference when**: Large documents, frequently updated data, many-to-many relationships
    
 2. **Anti-Pattern: Arrays on the 'One' Side**
+
 ```javascript
 // ANTI-PATTERN: Unbounded array growth
 const AuthorSchema = {

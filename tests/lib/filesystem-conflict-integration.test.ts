@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import * as crypto from 'node:crypto';
 import { copyFileWithBackup, getFileHash } from '../../cli/lib/filesystem';
 
 describe('File Conflict Detection - Integration Tests', () => {
@@ -10,8 +11,9 @@ describe('File Conflict Detection - Integration Tests', () => {
   let targetFile: string;
 
   beforeEach(async () => {
-    // Create a temporary directory for testing
-    tempDir = path.join(os.tmpdir(), `claudekit-test-${Date.now()}`);
+    // Create a temporary directory for testing with unique name to avoid collisions
+    const uniqueId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+    tempDir = path.join(os.tmpdir(), `claudekit-test-${uniqueId}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     sourceFile = path.join(tempDir, 'source.txt');

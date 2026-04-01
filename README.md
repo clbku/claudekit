@@ -4,10 +4,10 @@
 
 > Smart guardrails and workflow automation for Claude Code - catch errors in real-time, save checkpoints, and enhance AI coding with expert subagents
 
-[![npm version](https://img.shields.io/npm/v/claudekit.svg)](https://www.npmjs.com/package/claudekit)
-[![npm downloads](https://img.shields.io/npm/dt/claudekit.svg)](https://www.npmjs.com/package/claudekit)
+[![npm version](https://img.shields.io/npm/v/claudekit-dev.svg)](https://www.npmjs.com/package/claudekit-dev)
+[![npm downloads](https://img.shields.io/npm/dt/claudekit-dev.svg)](https://www.npmjs.com/package/claudekit-dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/claudekit.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/claudekit-dev.svg)](https://nodejs.org)
 [![Mentioned in Awesome Claude Code](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/hesreallyhim/awesome-claude-code)
 [![Buy Me a Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-ffdd00?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/carlrannaberg)
 
@@ -16,9 +16,9 @@
 > **⚠️ Requires:** Claude Code **Max plan** (for optimal token usage) • Node.js 20+
 
 ```bash
-npm install -g claudekit
-# or: yarn global add claudekit
-# or: pnpm add -g claudekit
+npm install -g claudekit-dev
+# or: yarn global add claudekit-dev
+# or: pnpm add -g claudekit-dev
 ```
 
 ## ⚡ Quick Start
@@ -85,6 +85,7 @@ After:  Use /code-review → ✅ 6 specialized agents analyze in parallel, dynam
   - **Path Extraction**: Safely processes globs, variables, and @file references in curl/httpie uploads
   - **Security Heuristics**: Detects risky patterns like `find -name '*.env' | xargs cat` before execution
 - **🔒 Enhanced Sensitive File Protection**: Comprehensive security with 195+ patterns across 12 categories including cloud credentials, cryptocurrencies, databases, tokens, and production data
+- **📦 Package Installation Protection**: Warns when installing packages without [Socket Firewall (sfw)](https://github.com/SocketDev/sfw-free) security scanning - detects 9 package managers across 6 ecosystems (npm, yarn, pnpm, bun, pip, uv, cargo, go, gem, composer)
 - **Multi-category Protection**: Environment files, SSH keys, cloud provider credentials (AWS/Azure/GCP), package manager auth, crypto wallets, production databases
 - **TypeScript Guard**: Blocks `any` types and type errors as Claude edits
 - **Linting**: Catches style issues immediately  
@@ -246,6 +247,7 @@ Hooks automatically enforce quality as Claude works:
 
 **File Security Hooks** (PreToolUse - run before file access)
 - `file-guard` - Block AI access to sensitive files (`.env`, keys, credentials) using ignore file patterns
+- `sfw-install` - Warn when installing packages without [Socket Firewall (sfw)](https://github.com/SocketDev/sfw-free) security scanning - protects against malicious dependencies
 
 **File Change Hooks** (PostToolUse - run on edit)
 - `typecheck-changed` - Run TypeScript type checking on file changes
@@ -355,7 +357,7 @@ The `file-guard` hook automatically protects sensitive files from AI access. Qui
 
 ```bash
 # New projects: Install claudekit with file-guard protection
-npm install -g claudekit && claudekit setup --yes --force --hooks file-guard
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks file-guard
 
 # Existing projects: Add file-guard to current setup
 claudekit setup --yes --force --hooks file-guard

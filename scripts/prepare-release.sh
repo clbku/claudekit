@@ -83,7 +83,7 @@ detect_ai_cli() {
 
     if command -v claude &> /dev/null; then
         AI_CLI="claude"
-        AI_MODEL="--model claude-sonnet-4-20250514"
+        AI_MODEL="--model glm-4.7"
         AI_FLAGS='--output-format stream-json --verbose --max-turns 30 --allowedTools Edit MultiEdit Read Write'
         print_success "Found Claude CLI with Sonnet 4 model"
     elif command -v gemini &> /dev/null; then
@@ -136,8 +136,8 @@ validate_environment() {
 
     # Check if we're on master branch
     current_branch=$(git branch --show-current)
-    if [[ "$current_branch" != "master" && "$current_branch" != "main" ]]; then
-        print_warning "Not on main / master branch (current: $current_branch)"
+    if [[ "$current_branch" != "dev" ]]; then
+        print_warning "Not on dev branch (current: $current_branch)"
         if [[ "$INTERACTIVE" == "true" ]]; then
             read -p "Continue anyway? [y/N]: " -r
             if [[ ! $REPLY =~ ^[Yy]$ ]]; then

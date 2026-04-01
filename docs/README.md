@@ -26,16 +26,16 @@ In-depth guides for specific workflows:
 
 | Guide | Description |
 |-------|-------------|
-| [Creating Commands](guides/creating-commands.md) | Build custom slash commands for Claude Code |
-| [Creating Hooks](guides/creating-hooks.md) | Develop automated validation and workflow hooks |
+| [Creating Commands](internals/creating-commands.md) | Build custom slash commands for Claude Code |
+| [Creating Hooks](internals/creating-hooks.md) | Develop automated validation and workflow hooks |
 | [Hook Profiling](guides/hook-profiling.md) | Measure and optimize hook performance and output |
 | [Thinking Level](guides/thinking-level.md) | Configure AI reasoning enhancement levels |
 | [File Guard](guides/file-guard.md) | Protect sensitive files from AI access |
 | [Codebase Map](guides/codebase-map.md) | Automated project context for AI assistants |
-| [Creating Subagents](guides/creating-subagents.md) | Build specialized AI assistants for specific tasks |
+| [Creating Subagents](internals/creating-subagents.md) | Build specialized AI assistants for specific tasks |
 | [Checkpoint System](guides/checkpoint.md) | Git checkpointing and safe development practices |
 | [Spec Workflow](guides/spec-workflow.md) | Specification-driven development with AI |
-| [Validation Workflow](guides/validation-workflow.md) | Automated code quality and validation |
+| [Self Review](guides/self-review.md) | Automated code quality and validation |
 | [Project Organization](guides/project-organization.md) | Best practices for file and directory structure |
 | [AI Migration](guides/ai-migration.md) | Migrating from other AI coding tools |
 
@@ -186,8 +186,8 @@ All components are designed to be:
 ## Next Steps
 
 1. **New Users**: Start with [Installation](getting-started/installation.md)
-2. **Customization**: Learn [Creating Commands](guides/creating-commands.md) and [Creating Hooks](guides/creating-hooks.md)
-3. **Advanced Usage**: Explore [Subagents](guides/creating-subagents.md) and [Integrations](integrations/)
+2. **Customization**: Learn [Creating Commands](internals/creating-commands.md) and [Creating Hooks](internals/creating-hooks.md)
+3. **Advanced Usage**: Explore [Subagents](internals/creating-subagents.md) and [Integrations](integrations/)
 4. **Development**: Review [Internals](internals/) for technical details
 
 ---

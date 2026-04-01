@@ -7,7 +7,6 @@ This guide provides comprehensive instructions for creating research-driven, hig
 - [Official Subagents Documentation](../official/subagents.md) - Claude Code's subagent system and configuration
 - [Prompting Guide](prompting-guide.md) - Patterns and best practices for effective subagent prompts
 - [Domain Expert Principles](../internals/principles.md) - Core principles for designing domain experts
-- [Agent Research Reports](../../reports/agent-research/) - Examples of comprehensive domain research
 
 ## Table of Contents
 - [Overview](#overview)
@@ -123,10 +122,9 @@ Your research should produce two key deliverables:
 
 #### 1. Research Report (Markdown)
 
-Save as `reports/agent-research/[domain]/expert-research.md`:
+Save research artifacts locally for reference during development.
 
-```markdown
-# [Domain] Expert Research Report
+### Research Examples
 
 ## 1. Scope and Boundaries
 - One-sentence scope: "React patterns, hooks, performance, SSR/hydration"
@@ -183,9 +181,7 @@ The research phase for claudekit's 22 agents produced:
 - **200+ official documentation links**
 - **Comprehensive problem matrices** for rapid development
 
-Browse examples:
-- [React Expert Research](../../reports/agent-research/react/expert-research.md) + [Matrix](../../reports/agent-research/react/expert-matrix.csv)
-- [All Research Reports](../../reports/agent-research/)
+Browse examples in the project's `reports/` directory or review existing agents in `src/agents/` for real-world implementations.
 
 ## Implementation Guide
 

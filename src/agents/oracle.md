@@ -6,7 +6,7 @@ description: >-
   complex problems. Invoke when you need advanced reasoning about difficult
   issues. Use PROACTIVELY when encountering complex bugs, architectural
   decisions, or when a thorough review would prevent future issues.
-tools: Read, Grep, Glob, Bash(git:*), Bash(npm:*), Bash(node:*), Bash(npx:*)
+tools: Bash
 category: general
 displayName: Oracle (GPT-5)
 color: purple

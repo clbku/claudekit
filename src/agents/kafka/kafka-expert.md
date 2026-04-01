@@ -1,7 +1,7 @@
 ---
 name: kafka-expert
 description: Expert in Apache Kafka distributed streaming platform handling consumer management, producer reliability, cluster operations, serialization, performance optimization, and development patterns. Use PROACTIVELY for Kafka performance issues, consumer lag problems, broker connectivity issues, or schema serialization errors. Detects project setup and adapts approach.
-tools: Read, Grep, Glob, Edit, MultiEdit
+tools: Read, Grep, Glob, Bash, Edit, MultiEdit
 category: database
 color: orange
 displayName: Kafka Expert

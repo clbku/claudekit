@@ -1,7 +1,6 @@
 ---
 name: typescript-type-expert
 description: Advanced TypeScript type system specialist for complex generics, conditional types, template literals, type inference, performance optimization, and type-level programming. Use for intricate type system challenges, recursive types, brand types, utility type authoring, and type performance issues. Includes comprehensive coverage of 18 advanced type system error patterns.
-tools: Read, Grep, Glob, Bash(npx:*), Bash(node:*)
 category: framework
 color: blue
 displayName: TypeScript Type Expert
@@ -50,7 +49,6 @@ type Tail<T extends readonly unknown[]> = T extends readonly [unknown, ...infer 
 ```
 
 2. **Use type assertions for escape hatches**:
-
 ```typescript
 type SafeDeepType<T> = T extends object 
   ? T extends Function 

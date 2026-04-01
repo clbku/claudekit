@@ -1,7 +1,6 @@
 ---
 name: cli-expert
 description: Expert in building npm package CLIs with Unix philosophy, automatic project root detection, argument parsing, interactive/non-interactive modes, and CLI library ecosystems. Use PROACTIVELY for CLI tool development, npm package creation, command-line interface design, and Unix-style tool implementation.
-tools: Read, Grep, Glob, Bash(npm:*), Bash(npx:*), Edit, MultiEdit, Write
 category: devops
 displayName: CLI Development Expert
 bundle: [nodejs-expert]

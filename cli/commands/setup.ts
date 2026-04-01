@@ -100,6 +100,14 @@ const HOOK_GROUPS: HookGroup[] = [
     triggerEvent: 'PreToolUse',
   },
   {
+    id: 'package-security',
+    name: '📦 Package Security (PreToolUse)',
+    description: 'Protect against malicious package installation - warns when installing without Socket Firewall (sfw)',
+    hooks: ['sfw-install'],
+    recommended: true,
+    triggerEvent: 'PreToolUse',
+  },
+  {
     id: 'file-validation',
     name: '📝 File Validation (PostToolUse)',
     description: 'Validate files immediately after modification - linting, types, and tests',

@@ -27,10 +27,10 @@ export class CheckCommentReplacementHook extends BaseHook {
     // Extract tool name from payload
     const toolName = context.payload['tool_name'] as string | undefined;
 
-    // Debug: Log the full context to see what we have
+    // Debug: Log minimal metadata only (full payload may contain sensitive file contents)
     if (process.env['DEBUG'] !== undefined && process.env['DEBUG'] !== '') {
-      console.error('[DEBUG] Full context.payload:', JSON.stringify(context.payload, null, 2));
-      console.error('[DEBUG] Tool input:', JSON.stringify(context.payload.tool_input, null, 2));
+      console.error('[DEBUG] Hook triggered for tool:', context.payload?.tool_input?.file_path ?? 'unknown');
+      // Note: Full payload logging disabled for security - may contain sensitive file contents
     }
 
     // Only process Edit and MultiEdit tools

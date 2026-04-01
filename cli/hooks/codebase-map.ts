@@ -1,15 +1,11 @@
 import type { HookContext, HookResult } from './base.js';
 import { BaseHook } from './base.js';
-import { checkToolAvailable } from './utils.js';
+import { checkToolAvailable, execCommand } from './utils.js';
 import { getHookConfig } from '../utils/claudekit-config.js';
 import { generateCodebaseMap, type CodebaseMapConfig } from './codebase-map-utils.js';
 import { SessionTracker } from './session-utils.js';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-
-const execAsync = promisify(exec);
 
 export class CodebaseMapHook extends BaseHook {
   name = 'codebase-map';
@@ -198,11 +194,8 @@ export class CodebaseMapUpdateHook extends BaseHook {
 
     try {
       // Update the specific file in the index (no filtering needed for updates)
-      const command = `codebase-map update "${filePath}"`;
-
-      await execAsync(command, {
+      await execCommand('codebase-map', ['update', filePath as string], {
         cwd: projectRoot,
-        maxBuffer: 10 * 1024 * 1024,
       });
 
       // Silent success - don't interrupt workflow

@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-04-01
+
+### Added
+- **Socket Firewall Install Protection**: New `sfw-install` hook for package installation security
+  - Detects package installation commands across 9 package managers (npm, yarn, pnpm, bun, pip, uv, cargo, go, gem, composer)
+  - Covers 6 ecosystems: JavaScript/TypeScript, Python, Rust, Go, Ruby, and PHP
+  - Warns when installing packages without Socket Firewall (sfw) security scanning
+  - Recommends wrapping commands with `sfw` for real-time malicious package blocking
+  - Provides installation instructions for sfw when not detected on system
+  - Skips warning when `sfw` prefix is already present in command
+  - Skips help/version flags (--help, --version, -h) to avoid false positives
+  - Added 650+ lines of comprehensive test coverage for all package managers and edge cases
+
+### Fixed
+- **Checkpoint Security**: Enhanced create-checkpoint hook to exclude sensitive files from checkpoint stashes
+  - Added filtering for sensitive files using pattern matching against 195+ sensitive patterns
+  - Only stages safe files to git index before creating stash (not `git add -A`)
+  - Skips checkpoint creation entirely when only sensitive files have changed
+  - Prevents credentials, API keys, tokens, and other secrets from being stored in checkpoint stashes
+  - Protects against accidental exposure of `.env` files, SSH keys, cloud credentials, and more
+- **Test Isolation**: Fixed test infrastructure to prevent directory collision issues
+  - Added unique ID generation for temporary test directories using random suffixes
+  - Prevents test failures when multiple test runs execute concurrently
+  - Improves CI/CD reliability and local parallel test execution
+
+### Removed
+- **Obsolete Documentation**: Cleaned up stale specification and report files
+  - Removed 40+ archived specification files from `specs/archive/`
+  - Removed 60+ obsolete research and validation reports from `reports/`
+  - Removed outdated agent research documentation covering deprecated agent designs
+  - Kept only essential references (COMPONENT_ANALYSIS.md) in reports directory
+- **Unused AI Tool Symlinks**: Removed symlinks for deprecated AI coding tools
+  - Removed `.idx/airules.md` symlink ( discontinued by the vendor)
+  - Removed `.cursorrules` symlink (functionality integrated elsewhere)
+  - Removed `.replit.md` symlink (no longer relevant)
+  - Removed `.windsurfrules` symlink (tool deprecated)
+  - Removed `GEMINI.md` symlink (format superseded by AGENTS.md standard)
+
+### Changed
+- **Release Workflow**: Refactored GitHub Actions release workflow for improved reliability
+  - Enhanced release automation with better validation and error handling
+  - Improved artifact management and version tagging
+- **Upstream Synchronization**: Synced selective improvements from upstream project
+  - Updated agent tool configurations and documentation formatting
+  - Enhanced frontmatter validation for better compatibility
+- **Hook Improvements**: Updated various hooks with enhanced error handling and detection
+  - Improved comment replacement detection accuracy
+  - Enhanced codebase map update hook reliability
+  - Better project detection for linting, testing, and typecheck hooks
+  - Updated session utilities with improved tracking
+
 ## [0.9.5] - 2026-03-31
 
 ### Fixed

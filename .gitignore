@@ -121,7 +121,8 @@ dev-debug.log
 tasks.json
 tasks/
 
-# Simple Task Master - User tasks are git-ignored
-.simple-task-master/tasks/
-.simple-task-master/lock
-package-lock.json
+# Simple Task Master
+.simple-task-master/
+
+# Google Project IDX
+.idx/

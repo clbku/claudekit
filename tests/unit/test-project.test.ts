@@ -36,6 +36,7 @@ describe('TestProjectHook', () => {
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },
@@ -65,7 +66,7 @@ describe('TestProjectHook', () => {
         cwd: '/test/project',
       });
       // Should not call the test command
-      expect(mockExecCommand).not.toHaveBeenCalledWith('npm test', [], expect.any(Object));
+      expect(mockExecCommand).not.toHaveBeenCalledWith('npm', ['test'], expect.any(Object));
     });
 
     it('should run test script when it exists with npm', async () => {
@@ -77,7 +78,7 @@ describe('TestProjectHook', () => {
             stderr: '',
           });
         }
-        if (command === 'npm test') {
+        if (command === 'npm' && args?.[0] === 'test') {
           return Promise.resolve({ exitCode: 0, stdout: 'All tests passed', stderr: '' });
         }
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
@@ -86,7 +87,7 @@ describe('TestProjectHook', () => {
 
       const result = await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('npm test', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npm', ['test'], {
         cwd: '/test/project',
         timeout: 55000,
       });
@@ -104,7 +105,7 @@ describe('TestProjectHook', () => {
             stderr: '',
           });
         }
-        if (command === 'pnpm test') {
+        if (command === 'pnpm' && args?.[0] === 'test') {
           return Promise.resolve({ exitCode: 0, stdout: 'All tests passed', stderr: '' });
         }
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
@@ -112,7 +113,8 @@ describe('TestProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'pnpm',
-          exec: 'pnpm dlx',
+          exec: 'pnpm',
+          execArgs: ['dlx'],
           run: 'pnpm run',
           test: 'pnpm test',
         },
@@ -120,7 +122,7 @@ describe('TestProjectHook', () => {
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('pnpm test', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('pnpm', ['test'], {
         cwd: '/test/project',
         timeout: 55000,
       });
@@ -135,7 +137,7 @@ describe('TestProjectHook', () => {
             stderr: '',
           });
         }
-        if (command === 'yarn test') {
+        if (command === 'yarn' && args?.[0] === 'test') {
           return Promise.resolve({ exitCode: 0, stdout: 'All tests passed', stderr: '' });
         }
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
@@ -143,7 +145,8 @@ describe('TestProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'yarn',
-          exec: 'yarn dlx',
+          exec: 'yarn',
+          execArgs: ['dlx'],
           run: 'yarn',
           test: 'yarn test',
         },
@@ -151,7 +154,7 @@ describe('TestProjectHook', () => {
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('yarn test', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('yarn', ['test'], {
         cwd: '/test/project',
         timeout: 55000,
       });
@@ -166,7 +169,7 @@ describe('TestProjectHook', () => {
             stderr: '',
           });
         }
-        if (command === 'custom test command') {
+        if (command === 'custom' && args?.[0] === 'test' && args?.[1] === 'command') {
           return Promise.resolve({ exitCode: 0, stdout: 'All tests passed', stderr: '' });
         }
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
@@ -178,7 +181,7 @@ describe('TestProjectHook', () => {
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('custom test command', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('custom', ['test', 'command'], {
         cwd: '/test/project',
         timeout: 55000,
       });
@@ -193,7 +196,7 @@ describe('TestProjectHook', () => {
             stderr: '',
           });
         }
-        if (command === 'npm test') {
+        if (command === 'npm' && args?.[0] === 'test') {
           return Promise.resolve({
             exitCode: 1,
             stdout: 'FAIL test/example.test.js',
@@ -271,7 +274,7 @@ describe('TestProjectHook', () => {
       expect(mockExecCommand).toHaveBeenCalledWith('cat', ['package.json'], {
         cwd: '/different/project/path',
       });
-      expect(mockExecCommand).toHaveBeenCalledWith('npm test', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npm', ['test'], {
         cwd: '/different/project/path',
         timeout: 55000,
       });
@@ -294,7 +297,7 @@ describe('TestProjectHook', () => {
 
       expect(result.exitCode).toBe(0);
       // Should not call test command when package.json doesn't contain "test"
-      expect(mockExecCommand).not.toHaveBeenCalledWith('npm test', [], expect.any(Object));
+      expect(mockExecCommand).not.toHaveBeenCalledWith('npm', ['test'], expect.any(Object));
     });
 
     it('should handle case where package.json file does not exist', async () => {
@@ -314,7 +317,7 @@ describe('TestProjectHook', () => {
 
       expect(result.exitCode).toBe(0);
       // Should not call test command when package.json can't be read
-      expect(mockExecCommand).not.toHaveBeenCalledWith('npm test', [], expect.any(Object));
+      expect(mockExecCommand).not.toHaveBeenCalledWith('npm', ['test'], expect.any(Object));
     });
   });
 

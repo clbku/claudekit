@@ -1,6 +1,6 @@
 {
-  "name": "claudekit",
-  "version": "0.9.5",
+  "name": "claudekit-dev",
+  "version": "0.9.8",
   "description": "CLI tools for Claude Code development workflow",
   "type": "module",
   "engines": {
@@ -19,6 +19,15 @@
     },
     "./package.json": "./package.json"
   },
+  "files": [
+    "dist/",
+    "bin/",
+    "src/agents/",
+    "src/commands/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "npm run clean && npm run build:main && npm run build:hooks && npm run build:esm && npm run build:types",
     "validate:deps": "node scripts/validate-dependencies.js",
@@ -57,7 +66,7 @@
     "format": "prettier --write \"cli/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"cli/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run lint && npm run typecheck",
     "release:patch": "./scripts/prepare-release.sh --type patch",
     "release:minor": "./scripts/prepare-release.sh --type minor",
     "release:major": "./scripts/prepare-release.sh --type major",
@@ -79,6 +88,9 @@
     "picomatch": "^4.0.3",
     "untildify": "^5.0.0",
     "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "codebase-map": "^0.6.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",
@@ -105,7 +117,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/carlrannaberg/claudekit.git"
+    "url": "https://github.com/clbku/claudekit.git"
   },
   "author": "",
   "license": "MIT"

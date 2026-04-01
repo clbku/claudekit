@@ -37,6 +37,10 @@ export class SessionTracker {
   }
 
   private getSessionFile(sessionId: string): string {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      throw new Error(`Invalid session ID format: ${sessionId}`);
+    }
     return path.join(this.claudekitDir, `${this.hookName}-session-${sessionId}.json`);
   }
 

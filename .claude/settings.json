@@ -9,6 +9,15 @@
             "command": "claudekit-hooks run file-guard"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claudekit-hooks run sfw-install"
+          }
+        ]
       }
     ],
     "PostToolUse": [

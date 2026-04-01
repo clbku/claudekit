@@ -55,6 +55,7 @@ describe('HookRunner', () => {
     vi.mocked(utils.detectPackageManager).mockResolvedValue({
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     });

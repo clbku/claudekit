@@ -39,20 +39,20 @@ Add or update the CLI tool documentation in CLAUDE.md following these steps:
    - If it exists, add the new tool in alphabetical order
 
 2. **Format the documentation** as a collapsible section:
-   ```markdown
+   ````markdown
    ## CLI Tools Reference
-   
+
    Documentation for CLI tools used in this project.
-   
+
    <details>
    <summary><strong>$ARGUMENTS</strong> - [Brief description from help output]</summary>
-   
+
    ```
    [Help output here, with ANSI codes stripped]
    ```
-   
+
    </details>
-   ```
+   ````
 
 3. **Clean the output**:
    - Remove ANSI escape codes (color codes, cursor movements)

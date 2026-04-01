@@ -64,11 +64,16 @@ export class TestChangedHook extends BaseHook {
     // Run tests
     const testCommand = config.command ?? packageManager.test;
 
-    // Only use '--' separator if running through npm/yarn/pnpm
-    const usesSeparator = testCommand.startsWith('npm ') || testCommand.startsWith('yarn ') || testCommand.startsWith('pnpm ');
-    const args = usesSeparator ? ['--', ...testFiles] : testFiles;
+    // Split testCommand into binary + args for spawn (e.g., "pnpm test" -> ["pnpm", "test"])
+    const commandParts = testCommand.split(/\s+/);
+    const cmd = commandParts[0] as string;
+    const cmdArgs = commandParts.slice(1);
 
-    const result = await this.execCommand(testCommand, args, {
+    // Only use '--' separator if running through npm/yarn/pnpm
+    const usesSeparator = cmd === 'npm' || cmd === 'yarn' || cmd === 'pnpm';
+    const args = usesSeparator ? [...cmdArgs, '--', ...testFiles] : [...cmdArgs, ...testFiles];
+
+    const result = await this.execCommand(cmd, args, {
       cwd: projectRoot,
     });
 

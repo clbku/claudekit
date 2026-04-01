@@ -89,13 +89,12 @@ export class LintProjectHook extends BaseHook {
 
   private async runBiome(
     projectRoot: string,
-    packageManager: { exec: string },
+    packageManager: { exec: string; execArgs: string[] },
     config: LintProjectConfig
   ): Promise<ExecResult> {
-    const biomeCommand = config.command ?? `${packageManager.exec} biome`;
-    const biomeArgs = ['check', '.'];
+    const biomeArgs = [...packageManager.execArgs, 'biome', 'check', '.'];
 
-    return await this.execCommand(biomeCommand, biomeArgs, {
+    return await this.execCommand(packageManager.exec, biomeArgs, {
       cwd: projectRoot,
       timeout: config.timeout ?? 60000,
     });
@@ -103,12 +102,12 @@ export class LintProjectHook extends BaseHook {
 
   private async runEslint(
     projectRoot: string,
-    packageManager: { exec: string }
+    packageManager: { exec: string; execArgs: string[] }
   ): Promise<ExecResult> {
     const config = this.loadConfig();
-    const eslintCommand = config.command ?? `${packageManager.exec} eslint . --ext .js,.jsx,.ts,.tsx`;
+    const eslintArgs = [...packageManager.execArgs, 'eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'];
 
-    return await this.execCommand(eslintCommand, [], {
+    return await this.execCommand(packageManager.exec, eslintArgs, {
       cwd: projectRoot,
       timeout: config.timeout ?? 60000,
     });

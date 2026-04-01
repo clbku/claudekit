@@ -39,12 +39,25 @@ export async function add(type: string, name: string, options: AddOptions = {}):
       );
     }
 
+    // Validate name doesn't contain path separators
+    if (name.includes('/') || name.includes('\\')) {
+      throw new Error('Name must not contain path separators');
+    }
+
     // Determine target directory
     const targetDir = '.claude/commands';
     const targetPath =
       options.path !== undefined && options.path !== ''
         ? options.path
         : path.join(targetDir, `${name}.md`);
+
+    // Validate path is within target directory
+    const resolvedPath = path.resolve(targetPath);
+    const resolvedTargetDir = path.resolve(targetDir);
+    if (!resolvedPath.startsWith(resolvedTargetDir + path.sep) && resolvedPath !== resolvedTargetDir) {
+      console.error(`Error: Path must be within ${targetDir}`);
+      process.exit(1);
+    }
 
     logger.debug(`Target path: ${targetPath}`);
 

@@ -3,20 +3,14 @@
  * Common utilities for hook implementation
  */
 
-import { exec } from 'node:child_process';
-import type { ExecOptions } from 'node:child_process';
-import { promisify } from 'node:util';
+import { spawn } from 'node:child_process';
+import type { SpawnOptions } from 'node:child_process';
 import { setImmediate } from 'node:timers';
 import fs from 'fs-extra';
 import * as path from 'node:path';
 import { Logger } from '../utils/logger.js';
 
 const logger = new Logger('utils');
-
-const execAsync = promisify(exec);
-
-// Type alias for exec options
-type ExecAsyncOptions = ExecOptions;
 
 // Standard input reader with TTY detection and timeout
 export async function readStdin(timeoutMs: number = 100): Promise<string> {
@@ -90,8 +84,8 @@ export async function readStdin(timeoutMs: number = 100): Promise<string> {
 // Project root discovery
 export async function findProjectRoot(startDir: string = process.cwd()): Promise<string> {
   try {
-    const { stdout } = await execAsync('git rev-parse --show-toplevel', { cwd: startDir });
-    return stdout.trim();
+    const result = await execCommand('git', ['rev-parse', '--show-toplevel'], { cwd: startDir });
+    return result.stdout.trim();
   } catch {
     return process.cwd();
   }
@@ -101,16 +95,18 @@ export async function findProjectRoot(startDir: string = process.cwd()): Promise
 export interface PackageManager {
   name: 'npm' | 'yarn' | 'pnpm';
   exec: string;
+  /** Arguments to pass to exec when running a tool (e.g., ['dlx'] for pnpm dlx) */
+  execArgs: string[];
   run: string;
   test: string;
 }
 
 export async function detectPackageManager(dir: string): Promise<PackageManager> {
   if (await fs.pathExists(path.join(dir, 'pnpm-lock.yaml'))) {
-    return { name: 'pnpm', exec: 'pnpm dlx', run: 'pnpm run', test: 'pnpm test' };
+    return { name: 'pnpm', exec: 'pnpm', execArgs: ['dlx'], run: 'pnpm run', test: 'pnpm test' };
   }
   if (await fs.pathExists(path.join(dir, 'yarn.lock'))) {
-    return { name: 'yarn', exec: 'yarn dlx', run: 'yarn', test: 'yarn test' };
+    return { name: 'yarn', exec: 'yarn', execArgs: ['dlx'], run: 'yarn', test: 'yarn test' };
   }
   if (await fs.pathExists(path.join(dir, 'package.json'))) {
     // Check packageManager field
@@ -120,10 +116,10 @@ export async function detectPackageManager(dir: string): Promise<PackageManager>
       };
       if (pkg.packageManager !== undefined && typeof pkg.packageManager === 'string') {
         if (pkg.packageManager.startsWith('pnpm') === true) {
-          return { name: 'pnpm', exec: 'pnpm dlx', run: 'pnpm run', test: 'pnpm test' };
+          return { name: 'pnpm', exec: 'pnpm', execArgs: ['dlx'], run: 'pnpm run', test: 'pnpm test' };
         }
         if (pkg.packageManager.startsWith('yarn') === true) {
-          return { name: 'yarn', exec: 'yarn dlx', run: 'yarn', test: 'yarn test' };
+          return { name: 'yarn', exec: 'yarn', execArgs: ['dlx'], run: 'yarn', test: 'yarn test' };
         }
       }
     } catch {
@@ -131,7 +127,7 @@ export async function detectPackageManager(dir: string): Promise<PackageManager>
       // This is expected when package.json doesn't exist or is malformed
     }
   }
-  return { name: 'npm', exec: 'npx', run: 'npm run', test: 'npm test' };
+  return { name: 'npm', exec: 'npx', execArgs: [], run: 'npm run', test: 'npm test' };
 }
 
 // Command execution wrapper
@@ -150,15 +146,15 @@ export interface ExecResult {
 }
 
 /**
- * Get execution options with environment variables for proper process management
- * @param options - The base execution options
+ * Get spawn options with environment variables for proper process management
+ * @param options - The base spawn options
  * @param command - Optional command string to determine if test-specific env vars are needed
  */
-export function getExecOptions(options: ExecAsyncOptions = {}, command?: string): ExecAsyncOptions {
+export function getExecOptions(options: SpawnOptions = {}, command?: string): SpawnOptions {
   // Only add vitest-specific env vars when running test commands
-  const isTestCommand = command !== undefined && 
+  const isTestCommand = command !== undefined &&
     (command.includes('test') || command.includes('vitest'));
-  
+
   // Start with process.env but exclude vitest vars for non-test commands
   const processEnv = { ...process.env };
   if (!isTestCommand) {
@@ -167,19 +163,20 @@ export function getExecOptions(options: ExecAsyncOptions = {}, command?: string)
     delete processEnv['VITEST_POOL_FORKS'];
     delete processEnv['VITEST_WATCH'];
   }
-  
+
   const baseEnv = {
     ...processEnv,
-    ...options.env,
+    ...(options.env as Record<string, string | undefined> | undefined),
     // Ensure CI-like behavior for process cleanup
     CI: process.env['CI'] ?? 'false',
   };
-  
-  const baseOptions: ExecAsyncOptions = {
+
+  const baseOptions: SpawnOptions = {
     ...options,
     env: baseEnv,
+    shell: false,
   };
-  
+
   if (isTestCommand) {
     return {
       ...baseOptions,
@@ -198,71 +195,73 @@ export function getExecOptions(options: ExecAsyncOptions = {}, command?: string)
   return baseOptions;
 }
 
-/**
- * Shell-quote an argument if it contains characters that would be
- * interpreted by /bin/sh (e.g. parentheses in Next.js route groups).
- */
-function shellQuoteArg(arg: string): string {
-  if (/[^a-zA-Z0-9_\-./=:@]/.test(arg)) {
-    return `'${arg.replace(/'/g, "'\\''")}'`;
-  }
-  return arg;
-}
-
 export async function execCommand(
   command: string,
   args: string[] = [],
   options: { cwd?: string; timeout?: number } = {}
 ): Promise<ExecResult> {
-  const fullCommand = `${command} ${args.map(shellQuoteArg).join(' ')}`.trim();
   const start = Date.now();
-  try {
-    const { stdout, stderr } = await execAsync(fullCommand, getExecOptions({
+  const timeout = options.timeout ?? 30000;
+
+  return await new Promise((resolve) => {
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+
+    const child = spawn(command, args, getExecOptions({
       cwd: options.cwd ?? process.cwd(),
-      timeout: options.timeout ?? 30000,
-      maxBuffer: 1024 * 1024 * 10, // 10MB
-    }, fullCommand));
-    const durationMs = Date.now() - start;
-    return { 
-      stdout: stdout?.toString() ?? '', 
-      stderr: stderr?.toString() ?? '', 
-      exitCode: 0, 
-      durationMs, 
-      timedOut: false 
-    };
-  } catch (error) {
-    const durationMs = Date.now() - start;
-    const execError = error as {
-      stdout?: string;
-      stderr?: string;
-      code?: number;
-      killed?: boolean;
-      signal?: string | null;
-      timedOut?: boolean; // some environments
-    };
+    }, command));
 
-    // Robust timeout detection:
-    // - child_process.exec sets error.killed=true and error.signal='SIGTERM' when timed out
-    // - some runtimes set error.timedOut=true
-    // - as a fallback, if a timeout was specified and elapsed time >= timeout - small delta, treat as timeout
-    const requestedTimeout = options.timeout ?? 30000;
-    const elapsedNearTimeout = durationMs >= Math.max(0, requestedTimeout - 25);
-    const didTimeOut =
-      execError.timedOut === true ||
-      (execError.killed === true &&
-        (execError.signal === 'SIGTERM' || execError.signal === 'SIGKILL')) ||
-      elapsedNearTimeout;
+    if (child.stdout !== null) {
+      child.stdout.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
+    }
+    if (child.stderr !== null) {
+      child.stderr.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
+    }
 
-    return {
-      stdout: execError.stdout ?? '',
-      stderr: execError.stderr ?? '',
-      exitCode: execError.code ?? 1,
-      timedOut: didTimeOut,
-      signal: execError.signal ?? null,
-      killed: execError.killed ?? false,
-      durationMs,
-    };
-  }
+    const timer = setTimeout(() => {
+      child.kill('SIGTERM');
+      // Fallback SIGKILL after 5 seconds if SIGTERM didn't work
+      setTimeout(() => {
+        if (!child.killed) {
+          child.kill('SIGKILL');
+        }
+      }, 5000);
+    }, timeout);
+
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      const durationMs = Date.now() - start;
+      const stdout = Buffer.concat(stdoutChunks).toString('utf8');
+      const stderr = Buffer.concat(stderrChunks).toString('utf8');
+
+      const killed = child.killed;
+      const timedOut = killed && (signal === 'SIGTERM' || signal === 'SIGKILL');
+
+      resolve({
+        stdout,
+        stderr,
+        exitCode: code ?? 1,
+        durationMs,
+        timedOut,
+        signal: signal ?? null,
+        killed: killed ?? false,
+      });
+    });
+
+    child.on('error', (_err) => {
+      clearTimeout(timer);
+      const durationMs = Date.now() - start;
+      resolve({
+        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+        stderr: Buffer.concat(stderrChunks).toString('utf8'),
+        exitCode: 1,
+        durationMs,
+        timedOut: false,
+        signal: null,
+        killed: false,
+      });
+    });
+  });
 }
 
 // Error formatting
@@ -285,7 +284,7 @@ export async function checkToolAvailable(
 
   // Check tool is executable
   const pm = await detectPackageManager(projectRoot);
-  const result = await execCommand(pm.exec, [tool, '--version'], {
+  const result = await execCommand(pm.exec, [...pm.execArgs, tool, '--version'], {
     cwd: projectRoot,
     timeout: 10000,
   });
@@ -294,20 +293,26 @@ export async function checkToolAvailable(
 }
 
 /**
- * Execute a shell command and return the output
+ * Execute a command and return the output.
+ * Parses the command string into command + args to avoid shell injection.
  */
 export async function executeCommand(
   command: string,
   cwd?: string
 ): Promise<{ stdout: string; stderr: string }> {
+  // Parse command string into executable and arguments
+  const parts = command.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    throw new Error('Empty command');
+  }
+  const cmd = parts[0] as string;
+  const args = parts.slice(1);
+
   try {
-    const result = await execAsync(command, getExecOptions({ cwd }));
-    // Ensure stdout and stderr are always strings
-    // The Node.js types indicate these could be string | Buffer depending on encoding
-    // We always want strings for consistency
+    const result = await execCommand(cmd, args, cwd !== undefined && cwd !== '' ? { cwd } : {});
     return {
-      stdout: String(result.stdout),
-      stderr: String(result.stderr)
+      stdout: result.stdout,
+      stderr: result.stderr,
     };
   } catch (error) {
     logger.error(error instanceof Error ? error : new Error(`Command failed: ${command}`));
@@ -344,8 +349,8 @@ export async function writeJsonFile(filePath: string, data: unknown): Promise<vo
  * Find files matching a pattern
  */
 export async function findFiles(pattern: string, directory: string): Promise<string[]> {
-  const { stdout } = await executeCommand(`find . -name "${pattern}"`, directory);
-  return stdout
+  const result = await execCommand('find', ['.', '-name', pattern], { cwd: directory });
+  return result.stdout
     .split('\n')
     .filter(Boolean)
     .map((file) => path.join(directory, file));

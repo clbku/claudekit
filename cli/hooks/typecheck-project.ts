@@ -36,9 +36,13 @@ export class TypecheckProjectHook extends BaseHook {
     this.progress('Running project-wide TypeScript validation...');
 
     const config = this.loadConfig();
-    const tsCommand = config.command ?? `${packageManager.exec} tsc --noEmit`;
 
-    const result = await this.execCommand(tsCommand, [], { cwd: projectRoot });
+    // Use custom command if configured, otherwise use package manager's exec
+    const result = config.command !== undefined
+      ? await this.execCommand(config.command, [], { cwd: projectRoot })
+      : await this.execCommand(packageManager.exec, [...packageManager.execArgs, 'tsc', '--noEmit'], { cwd: projectRoot });
+
+    const tsCommand = config.command ?? `${packageManager.exec} ${packageManager.execArgs.join(' ')} tsc --noEmit`;
 
     if (result.exitCode === 0) {
       this.success('TypeScript validation passed!');

@@ -17,6 +17,7 @@ vi.mock('node:util', () => ({
 
 vi.mock('node:child_process', () => ({
   exec: vi.fn(),
+  spawn: vi.fn(),
 }));
 
 vi.mock('../../cli/hooks/utils.js');
@@ -53,7 +54,7 @@ function createUserPromptContext(sessionId: string, prompt: string = 'test promp
 
 describe('Codebase Hooks Integration', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-  let mockExecAsync: Mock;
+  let mockExecCommand: Mock;
   let mockCheckToolAvailable: Mock;
   let mockGetHookConfig: Mock;
   let mockFsAccess: Mock;
@@ -63,9 +64,8 @@ describe('Codebase Hooks Integration', () => {
   let mockFsReaddir: Mock;
 
   beforeEach(async () => {
-    // Dynamically import to get mocked version
-    const cp = await import('node:child_process');
-    mockExecAsync = cp.exec as unknown as Mock;
+    // Get the auto-mocked execCommand from utils
+    mockExecCommand = vi.mocked(utils.execCommand);
     mockCheckToolAvailable = vi.mocked(utils.checkToolAvailable);
     mockGetHookConfig = vi.mocked(claudekitConfig.getHookConfig);
     mockFsAccess = vi.mocked(fs.access);
@@ -82,7 +82,7 @@ describe('Codebase Hooks Integration', () => {
     mockFsAccess.mockRejectedValue(new Error('File not found'));
     mockFsMkdir.mockResolvedValue(undefined);
     mockFsWriteFile.mockResolvedValue(undefined);
-    mockExecAsync.mockResolvedValue({ stdout: '', stderr: '' });
+    mockExecCommand.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
     mockFsReaddir.mockResolvedValue([]);
   });
 
@@ -93,26 +93,25 @@ describe('Codebase Hooks Integration', () => {
 
   describe('Hook Coordination', () => {
     it('should coordinate between SessionStart and UserPromptSubmit hooks', async () => {
-      const sessionId = 'integration-test-session';
+      const sessionId = '12345678-1234-1234-1234-123456789012';
       const mapOutput = '# Project Structure\ncli/index.ts > cli/utils';
 
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: mapOutput, stderr: '' }); // format
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' }) // scan
+        .mockResolvedValueOnce({ exitCode: 0, stdout: mapOutput, stderr: '' }); // format
 
       // First run: SessionStart hook generates map
       const mapHook = new CodebaseMapHook();
       const mapResult = await mapHook.execute(createSessionStartContext(sessionId));
 
       expect(mapResult.exitCode).toBe(0);
-      // SessionStart hook should use jsonOutput for context
 
       // Reset mocks for second hook
       consoleLogSpy.mockClear();
-      mockExecAsync.mockClear();
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // scan
-        .mockResolvedValueOnce({ stdout: mapOutput, stderr: '' }); // format
+      mockExecCommand.mockClear();
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' }) // scan
+        .mockResolvedValueOnce({ exitCode: 0, stdout: mapOutput, stderr: '' }); // format
 
       // Second run: UserPromptSubmit hook on first prompt
       const contextHook = new CodebaseMapHook();
@@ -138,7 +137,7 @@ describe('Codebase Hooks Integration', () => {
 
       // Third run: UserPromptSubmit hook on second prompt (should skip)
       consoleLogSpy.mockClear();
-      mockExecAsync.mockClear();
+      mockExecCommand.mockClear();
 
       // Mock that session file exists
       mockFsAccess.mockResolvedValueOnce(undefined);
@@ -155,18 +154,18 @@ describe('Codebase Hooks Integration', () => {
       );
 
       expect(secondPromptResult.exitCode).toBe(0);
-      expect(mockExecAsync).not.toHaveBeenCalled(); // Should not regenerate map
+      expect(mockExecCommand).not.toHaveBeenCalled(); // Should not regenerate map
       expect(consoleLogSpy).not.toHaveBeenCalled(); // Should not output again
     });
 
     it('should handle different sessions independently', async () => {
-      const session1 = 'session-1';
-      const session2 = 'session-2';
+      const session1 = '11111111-1111-1111-1111-111111111111';
+      const session2 = '22222222-2222-2222-2222-222222222222';
       const mapOutput = 'test map';
 
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: mapOutput, stderr: '' });
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: mapOutput, stderr: '' });
 
       // First session
       const contextHook = new CodebaseMapHook();
@@ -178,10 +177,10 @@ describe('Codebase Hooks Integration', () => {
       );
 
       // Reset for second session
-      mockExecAsync.mockClear();
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: mapOutput, stderr: '' });
+      mockExecCommand.mockClear();
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: mapOutput, stderr: '' });
 
       // Second session should also generate map
       await contextHook.execute(createUserPromptContext(session2));
@@ -206,33 +205,35 @@ describe('Codebase Hooks Integration', () => {
         return {};
       });
 
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: '{"files": []}', stderr: '' });
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '{"files": []}', stderr: '' });
 
       const mapHook = new CodebaseMapHook();
-      await mapHook.execute(createSessionStartContext('test-session'));
+      await mapHook.execute(createSessionStartContext('33333333-3333-3333-3333-333333333333'));
 
-      // Check that filtering was applied
-      expect(mockExecAsync).toHaveBeenCalledWith('codebase-map scan', expect.any(Object));
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        `codebase-map format --format json --include "src/**" --exclude "**/*.test.ts"`,
+      // Check that filtering was applied via execCommand args
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
 
       // Reset and test context hook
-      mockExecAsync.mockClear();
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: '{"files": []}', stderr: '' });
+      mockExecCommand.mockClear();
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '{"files": []}', stderr: '' });
 
       const contextHook = new CodebaseMapHook();
-      await contextHook.execute(createUserPromptContext('test-session'));
+      await contextHook.execute(createUserPromptContext('44444444-4444-4444-4444-444444444444'));
 
       // Should use same filtering configuration
-      expect(mockExecAsync).toHaveBeenCalledWith('codebase-map scan', expect.any(Object));
-      expect(mockExecAsync).toHaveBeenCalledWith(
-        `codebase-map format --format ${customConfig.format} --include "src/**" --exclude "**/*.test.ts"`,
+      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith(
+        'codebase-map',
+        ['format', '--format', customConfig.format, '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
     });
@@ -243,50 +244,50 @@ describe('Codebase Hooks Integration', () => {
       mockCheckToolAvailable.mockResolvedValue(false);
 
       const mapHook = new CodebaseMapHook();
-      const mapResult = await mapHook.execute(createSessionStartContext('test'));
+      const mapResult = await mapHook.execute(createSessionStartContext('55555555-5555-5555-5555-555555555555'));
 
       expect(mapResult.exitCode).toBe(0); // Should not block
-      expect(mockExecAsync).not.toHaveBeenCalled();
+      expect(mockExecCommand).not.toHaveBeenCalled();
 
       const contextHook = new CodebaseMapHook();
-      const contextResult = await contextHook.execute(createUserPromptContext('test'));
+      const contextResult = await contextHook.execute(createUserPromptContext('66666666-6666-6666-6666-666666666666'));
 
       expect(contextResult.exitCode).toBe(0); // Should not block
-      expect(mockExecAsync).not.toHaveBeenCalled();
+      expect(mockExecCommand).not.toHaveBeenCalled();
     });
 
     it('should handle execution failures independently', async () => {
-      mockExecAsync.mockRejectedValue(new Error('Command failed'));
+      mockExecCommand.mockRejectedValue(new Error('Command failed'));
 
       // SessionStart hook failure
       const mapHook = new CodebaseMapHook();
-      const mapResult = await mapHook.execute(createSessionStartContext('test'));
+      const mapResult = await mapHook.execute(createSessionStartContext('77777777-7777-7777-7777-777777777777'));
 
       expect(mapResult.exitCode).toBe(0); // Should not block session
 
       // UserPromptSubmit hook failure
       const contextHook = new CodebaseMapHook();
-      const contextResult = await contextHook.execute(createUserPromptContext('test'));
+      const contextResult = await contextHook.execute(createUserPromptContext('88888888-8888-8888-8888-888888888888'));
 
       expect(contextResult.exitCode).toBe(0); // Should not block prompt
     });
 
     it('should handle corrupted session files gracefully', async () => {
-      const sessionId = 'corrupted-session';
+      const sessionId = '99999999-9999-9999-9999-999999999999';
 
       // Mock corrupted session file
       mockFsAccess.mockResolvedValueOnce(undefined);
       mockFsReadFile.mockResolvedValueOnce('invalid json {');
 
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: 'map output', stderr: '' });
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: 'map output', stderr: '' });
 
       const contextHook = new CodebaseMapHook();
       const result = await contextHook.execute(createUserPromptContext(sessionId));
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecAsync).toHaveBeenCalled(); // Should treat as new session
+      expect(mockExecCommand).toHaveBeenCalled(); // Should treat as new session
       expect(result.jsonResponse).toBeDefined();
       const jsonResponse = result.jsonResponse as {
         hookSpecificOutput: {
@@ -300,11 +301,11 @@ describe('Codebase Hooks Integration', () => {
 
   describe('Session Management', () => {
     it('should write session files and clean up old ones', async () => {
-      const sessionId = 'session-management-test';
+      const sessionId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
-      mockExecAsync
-        .mockResolvedValueOnce({ stdout: '', stderr: '' })
-        .mockResolvedValueOnce({ stdout: 'output', stderr: '' });
+      mockExecCommand
+        .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: 'output', stderr: '' });
 
       const contextHook = new CodebaseMapHook();
       await contextHook.execute(createUserPromptContext(sessionId));

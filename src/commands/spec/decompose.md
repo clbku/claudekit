@@ -178,7 +178,7 @@ Before creating any STM tasks, confirm your understanding:
    - [ ] Path validation prevents directory traversal
    - [ ] Tests: All operations work on macOS/Linux with proper error handling
    ```
-   
+
 5. **Create Task Management Entries**:
    
    ## 🚨 STOP AND READ: Common Mistake vs Correct Approach

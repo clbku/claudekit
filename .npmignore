@@ -46,10 +46,9 @@ tsconfig.json
 .markdown-link-check.json
 tsconfig.build.json
 
-# TypeScript source files (if we want to exclude them)
-# Note: Currently keeping TypeScript sources for debugging
-# cli/**/*.ts
-# !cli/**/*.d.ts
+# TypeScript source files - exclude from npm package
+cli/**/*.ts
+!cli/**/*.d.ts
 
 # Package manager lock files (debatable - some projects include these)
 # package-lock.json

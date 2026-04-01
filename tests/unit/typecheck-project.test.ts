@@ -39,6 +39,7 @@ describe('TypecheckProjectHook', () => {
     packageManager: {
       name: 'npm',
       exec: 'npx',
+      execArgs: [],
       run: 'npm run',
       test: 'npm test',
     },
@@ -66,7 +67,7 @@ describe('TypecheckProjectHook', () => {
 
       const result = await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('npx tsc --noEmit', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['tsc', '--noEmit'], {
         cwd: '/test/project',
       });
       expect(result.exitCode).toBe(0);
@@ -80,7 +81,8 @@ describe('TypecheckProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'pnpm',
-          exec: 'pnpm dlx',
+          exec: 'pnpm',
+          execArgs: ['dlx'],
           run: 'pnpm run',
           test: 'pnpm test',
         },
@@ -88,7 +90,7 @@ describe('TypecheckProjectHook', () => {
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('pnpm dlx tsc --noEmit', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('pnpm', ['dlx', 'tsc', '--noEmit'], {
         cwd: '/test/project',
       });
     });
@@ -99,7 +101,8 @@ describe('TypecheckProjectHook', () => {
       const context = createMockContext({
         packageManager: {
           name: 'yarn',
-          exec: 'yarn dlx',
+          exec: 'yarn',
+          execArgs: ['dlx'],
           run: 'yarn',
           test: 'yarn test',
         },
@@ -107,7 +110,7 @@ describe('TypecheckProjectHook', () => {
 
       await hook.execute(context);
 
-      expect(mockExecCommand).toHaveBeenCalledWith('yarn dlx tsc --noEmit', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('yarn', ['dlx', 'tsc', '--noEmit'], {
         cwd: '/test/project',
       });
     });
@@ -140,7 +143,7 @@ describe('TypecheckProjectHook', () => {
       const result = await hook.execute(context);
 
       expect(result.exitCode).toBe(2);
-      expect(utils.formatTypeScriptErrors).toHaveBeenCalledWith(mockResult, 'npx tsc --noEmit');
+      expect(utils.formatTypeScriptErrors).toHaveBeenCalledWith(mockResult, 'npx  tsc --noEmit');
       expect(consoleErrorSpy).toHaveBeenCalledWith('Formatted TypeScript errors');
     });
 
@@ -178,7 +181,7 @@ describe('TypecheckProjectHook', () => {
         'tsconfig.json',
         '/different/project/path'
       );
-      expect(mockExecCommand).toHaveBeenCalledWith('npx tsc --noEmit', [], {
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['tsc', '--noEmit'], {
         cwd: '/different/project/path',
       });
     });

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -18,7 +18,8 @@
       "!**/*.log",
       "!**/package-lock.json",
       "!**/pnpm-lock.yaml",
-      "!**/yarn.lock"
+      "!**/yarn.lock",
+      "!src/**/*.md"
     ]
   },
   "formatter": {
@@ -40,7 +41,7 @@
       "correctness": {
         "recommended": false,
         "noUnusedVariables": "error",
-        "noUnreachable": "error", 
+        "noUnreachable": "error",
         "noConstAssign": "error"
       },
       "nursery": { "recommended": false },

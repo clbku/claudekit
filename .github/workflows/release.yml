@@ -30,32 +30,32 @@ jobs:
       version: ${{ steps.check.outputs.version }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Check if version is releasable
-      id: check
-      run: |
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "Current version: $CURRENT_VERSION"
+      - name: Check if version is releasable
+        id: check
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
 
-        # Check for uncommitted changes (shouldn't happen on release branch)
-        if ! git diff-index --quiet HEAD --; then
-          echo "::error::Uncommitted changes detected on release branch"
-          exit 1
-        fi
+          # Check for uncommitted changes (shouldn't happen on release branch)
+          if ! git diff-index --quiet HEAD --; then
+            echo "::error::Uncommitted changes detected on release branch"
+            exit 1
+          fi
 
-        # Check if tag already exists (prevent double-publish)
-        if git tag | grep -q "^v$CURRENT_VERSION$"; then
-          echo "::warning::Tag v$CURRENT_VERSION already exists. Skipping release."
-          echo "should-release=false" >> $GITHUB_OUTPUT
-        else
-          echo "Tag v$CURRENT_VERSION does not exist. Proceeding with release."
-          echo "should-release=true" >> $GITHUB_OUTPUT
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        fi
+          # Check if tag already exists (prevent double-publish)
+          if git tag | grep -q "^v$CURRENT_VERSION$"; then
+            echo "::warning::Tag v$CURRENT_VERSION already exists. Skipping release."
+            echo "should-release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$CURRENT_VERSION does not exist. Proceeding with release."
+            echo "should-release=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
 
   release:
     name: Build and Publish
@@ -64,147 +64,145 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://registry.npmjs.org'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Lint
-      run: npm run lint
+      - name: Lint
+        run: npm run lint
 
-    - name: Type check
-      run: npm run typecheck
+      - name: Type check
+        run: npm run typecheck
 
-    - name: Run tests
-      run: npm run test:ci
+      - name: Run tests
+        run: npm run test:ci
 
-    - name: Build package
-      run: npm run build
+      - name: Build package
+        run: npm run build
 
-    - name: Validate build output
-      run: |
-        # Check that dist directory exists and contains files
-        if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
-          echo "::error::Build output directory 'dist' is empty or missing"
-          exit 1
-        fi
+      - name: Validate build output
+        run: |
+          # Check that dist directory exists and contains files
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+            echo "::error::Build output directory 'dist' is empty or missing"
+            exit 1
+          fi
 
-        # Check that main entry point exists
-        if [ ! -f "dist/index.cjs" ]; then
-          echo "::error::Main entry point 'dist/index.cjs' is missing"
-          exit 1
-        fi
+          # Check that main entry point exists
+          if [ ! -f "dist/index.cjs" ]; then
+            echo "::error::Main entry point 'dist/index.cjs' is missing"
+            exit 1
+          fi
 
-        # Check that type definitions exist
-        if [ ! -f "dist/index.d.ts" ]; then
-          echo "::error::Type definitions 'dist/index.d.ts' are missing"
-          exit 1
-        fi
+          # Check that type definitions exist
+          if [ ! -f "dist/index.d.ts" ]; then
+            echo "::error::Type definitions 'dist/index.d.ts' are missing"
+            exit 1
+          fi
 
-        # Check that CLI entry point exists
-        if [ ! -f "bin/claudekit" ]; then
-          echo "::error::CLI entry point 'bin/claudekit' is missing"
-          exit 1
-        fi
+          # Check that CLI entry point exists
+          if [ ! -f "bin/claudekit" ]; then
+            echo "::error::CLI entry point 'bin/claudekit' is missing"
+            exit 1
+          fi
 
-        echo "Build validation passed"
+          echo "Build validation passed"
 
-    - name: Configure git
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Create release tag
-      run: |
-        VERSION=${{ needs.check-version.outputs.version }}
-        git tag -a "v$VERSION" -m "Release v$VERSION"
-        git push origin "v$VERSION"
+      - name: Create release tag
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
 
-    - name: Publish to npm
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm
+        run: npm publish --access public --loglevel verbose
 
-    - name: Extract changelog for version
-      id: changelog
-      run: |
-        VERSION=${{ needs.check-version.outputs.version }}
+      - name: Extract changelog for version
+        id: changelog
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
 
-        # Extract the changelog content for this version
-        CHANGELOG_CONTENT=$(awk -v version="$VERSION" '
-          BEGIN { found = 0; content = "" }
-          /^## \[/ {
-            if (found == 1) { exit }
-            if ($0 ~ "## \\[" version "\\]") { found = 1; next }
-          }
-          found == 1 { content = content $0 "\n" }
-          END { print content }
-        ' CHANGELOG.md)
-
-        # Fallback: try without brackets
-        if [ -z "$CHANGELOG_CONTENT" ]; then
+          # Extract the changelog content for this version
           CHANGELOG_CONTENT=$(awk -v version="$VERSION" '
             BEGIN { found = 0; content = "" }
-            /^## / {
+            /^## \[/ {
               if (found == 1) { exit }
-              if ($0 ~ version) { found = 1; next }
+              if ($0 ~ "## \\[" version "\\]") { found = 1; next }
             }
             found == 1 { content = content $0 "\n" }
             END { print content }
           ' CHANGELOG.md)
-        fi
 
-        # Create release notes
-        cat > release_notes.md << EOF
-        ## Installation
+          # Fallback: try without brackets
+          if [ -z "$CHANGELOG_CONTENT" ]; then
+            CHANGELOG_CONTENT=$(awk -v version="$VERSION" '
+              BEGIN { found = 0; content = "" }
+              /^## / {
+                if (found == 1) { exit }
+                if ($0 ~ version) { found = 1; next }
+              }
+              found == 1 { content = content $0 "\n" }
+              END { print content }
+            ' CHANGELOG.md)
+          fi
 
-        \`\`\`bash
-        npm install -g claudekit@$VERSION
-        \`\`\`
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## Installation
 
-        ## What's Changed
+          \`\`\`bash
+          npm install -g claudekit@$VERSION
+          \`\`\`
 
-        $CHANGELOG_CONTENT
+          ## What's Changed
 
-        ## Links
+          $CHANGELOG_CONTENT
 
-        - [Full Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
-        - [NPM Package](https://www.npmjs.com/package/claudekit/v/$VERSION)
+          ## Links
 
-        ---
+          - [Full Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          - [NPM Package](https://www.npmjs.com/package/claudekit/v/$VERSION)
 
-        *For the complete list of changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md).*
-        EOF
+          ---
 
-        echo "Created release notes for version $VERSION"
+          *For the complete list of changes, see [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md).*
+          EOF
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: v${{ needs.check-version.outputs.version }}
-        name: Release v${{ needs.check-version.outputs.version }}
-        body_path: release_notes.md
-        draft: false
-        prerelease: false
+          echo "Created release notes for version $VERSION"
 
-    - name: Merge release into main
-      run: |
-        VERSION=${{ needs.check-version.outputs.version }}
-        git fetch origin main
-        git checkout main
-        git merge release --no-ff -m "chore: merge release v$VERSION into main"
-        git push origin main
-        echo "Merged release branch into main"
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: Release v${{ needs.check-version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+
+      - name: Merge release into main
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
+          git fetch origin main
+          git checkout main
+          git merge release --no-ff -m "chore: merge release v$VERSION into main"
+          git push origin main
+          echo "Merged release branch into main"
 
   cleanup:
     name: Cleanup
@@ -213,13 +211,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Delete release branch
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git push origin --delete release || echo "Release branch already deleted or not found"
+      - name: Delete config
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"

@@ -85,7 +85,15 @@ After:  Use /code-review → ✅ 6 specialized agents analyze in parallel, dynam
   - **Path Extraction**: Safely processes globs, variables, and @file references in curl/httpie uploads
   - **Security Heuristics**: Detects risky patterns like `find -name '*.env' | xargs cat` before execution
 - **🔒 Enhanced Sensitive File Protection**: Comprehensive security with 195+ patterns across 12 categories including cloud credentials, cryptocurrencies, databases, tokens, and production data
-- **📦 Package Installation Protection**: Warns when installing packages without [Socket Firewall (sfw)](https://github.com/SocketDev/sfw-free) security scanning - detects 9 package managers across 6 ecosystems (npm, yarn, pnpm, bun, pip, uv, cargo, go, gem, composer)
+- **📦 Package Installation Protection**: `sfw-install` hook warns when installing packages without [Socket Firewall (sfw)](https://github.com/SocketDev/sfw-free) security scanning
+  - Detects 9 package managers across 6 ecosystems (npm, yarn, pnpm, bun, pip, uv, cargo, go, gem, composer)
+  - Recommends wrapping commands with `sfw` for real-time malicious package blocking
+  - Provides installation instructions when sfw is not available
+  - Skips help/version flags to avoid false positives
+- **🔒 Checkpoint Security**: Enhanced checkpoint system automatically excludes sensitive files from auto-save stashes
+  - Filters credentials, API keys, tokens, and secrets from checkpoint creation
+  - Only stages safe files when creating automatic checkpoints
+  - Prevents accidental exposure of `.env` files, SSH keys, and cloud credentials
 - **Multi-category Protection**: Environment files, SSH keys, cloud provider credentials (AWS/Azure/GCP), package manager auth, crypto wallets, production databases
 - **TypeScript Guard**: Blocks `any` types and type errors as Claude edits
 - **Linting**: Catches style issues immediately  

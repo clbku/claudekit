@@ -1,7 +1,7 @@
 ---
 description: Break down a validated specification into actionable implementation tasks
 category: validation
-allowed-tools: Read, Task, Write, TodoWrite, Bash(mkdir:*), Bash(cat:*), Bash(grep:*), Bash(echo:*), Bash(basename:*), Bash(date:*), Bash(claudekit:status stm), Bash(stm:*)
+allowed-tools: Read, Task, Write, Bash(mkdir:*), Bash(cat:*), Bash(grep:*), Bash(echo:*), Bash(basename:*), Bash(date:*), Bash(claudekit:status stm), Bash(stm:*)
 argument-hint: "<path-to-spec-file>"
 ---
 
@@ -40,7 +40,7 @@ Before creating any STM tasks, confirm your understanding:
    - Check the STM_STATUS output above
    - If status is "Available but not initialized", run: `stm init`
    - If status is "Available and initialized", use STM for task management
-   - If status is "Not installed", fall back to TodoWrite
+   - If status is "Not installed", fall back to TaskCreate/TaskUpdate
 
 1. **Read and Validate Specification**:
    - Read the specified spec file
@@ -406,7 +406,7 @@ Before creating any STM tasks, confirm your understanding:
    rm /tmp/stm-task-*.txt
    ```
    
-   If STM is not available, use TodoWrite:
+   If STM is not available, use TaskCreate/TaskUpdate:
    ```javascript
    [
      {
@@ -427,12 +427,12 @@ Before creating any STM tasks, confirm your understanding:
 
 6. **Save Task Breakdown**:
    - Save the detailed task breakdown document to `specs/[spec-name]-tasks.md`
-   - Create tasks in STM or TodoWrite for immediate tracking
+   - Create tasks in STM or TaskCreate/TaskUpdate for immediate tracking
    - Generate a summary report showing:
      - Total number of tasks
      - Breakdown by phase
      - Parallel execution opportunities
-     - Task management system used (STM or TodoWrite)
+     - Task management system used (STM or TaskCreate/TaskUpdate)
 
 ## Output Format
 
@@ -445,7 +445,7 @@ The generated markdown file includes:
 - Execution strategy
 
 ### Task Management Integration
-Tasks are immediately available in STM (if installed) or TodoWrite for:
+Tasks are immediately available in STM (if installed) or TaskCreate/TaskUpdate for:
 - Progress tracking
 - Status updates
 - Blocking issue identification
@@ -474,7 +474,7 @@ Displays:
 
 The decomposition is complete when:
 - ✅ Task breakdown document is saved to specs directory
-- ✅ All tasks are created in STM (if available) or TodoWrite for tracking
+- ✅ All tasks are created in STM (if available) or TaskCreate/TaskUpdate for tracking
 - ✅ **Tasks preserve ALL implementation details from the spec including:**
   - Complete code blocks and examples (not summarized)
   - Full technical requirements and specifications
@@ -523,7 +523,7 @@ After creating STM tasks, perform these checks:
 - **Next step**: Use `/spec:execute` to implement the decomposed tasks
 - **Progress tracking**: 
   - With STM: `stm list --pretty` or `stm list --status pending`
-  - With TodoWrite: Monitor task completion in session
+  - With TaskCreate/TaskUpdate: Monitor task completion in session
 - **Quality checks**: Run `/validate-and-fix` after implementation
 
 ## Best Practices

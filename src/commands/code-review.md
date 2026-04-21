@@ -1,6 +1,6 @@
 ---
 description: Multi-aspect code review using parallel code-review-expert agents
-allowed-tools: Task, Bash(git status:*), Bash(git diff:*), Bash(git log:*)
+allowed-tools: Task, Read, Bash(git status:*), Bash(git diff:*), Bash(git log:*)
 argument-hint: '[what to review] - e.g., "recent changes", "src/components", "*.ts files", "PR #123"'
 ---
 

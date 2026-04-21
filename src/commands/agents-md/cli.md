@@ -19,6 +19,12 @@ Examples:
 
 ## Task
 
+### 0. Validate Input (Security)
+Before executing any commands, validate that `$ARGUMENTS` is safe:
+- Verify it contains only valid CLI tool name characters: letters, numbers, hyphens, and underscores
+- Reject if it contains shell metacharacters (`;`, `&`, `|`, `$`, backticks, `(`, `)`, `{`, `}`, `<`, `>`, `!`, spaces, or newlines)
+- If validation fails, show an error and stop: "Invalid tool name: $ARGUMENTS. Only alphanumeric characters, hyphens, and underscores are allowed."
+
 ### 1. Check Tool Availability
 First, verify the CLI tool exists:
 !`which $ARGUMENTS 2>/dev/null && echo "✅ $ARGUMENTS is available" || echo "❌ $ARGUMENTS not found"`

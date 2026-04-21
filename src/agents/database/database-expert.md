@@ -21,12 +21,6 @@ Before proceeding, I'll evaluate if a specialized sub-expert would be more appro
 **MongoDB document design** (aggregation pipelines, sharding, replica sets):
 → Consider `mongodb-expert` for NoSQL-specific patterns and operations
 
-**Redis caching patterns** (session management, pub/sub, caching strategies):
-→ Consider `redis-expert` for cache-specific optimization
-
-**ORM-specific optimization** (complex relationship mapping, type safety):
-→ Consider `prisma-expert` or `typeorm-expert` for ORM-specific advanced patterns
-
 If none of these specialized experts are needed, I'll continue with general database expertise.
 
 ## Step 1: Environment Detection

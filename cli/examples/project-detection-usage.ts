@@ -10,6 +10,7 @@
 import { detectProjectContext, resolveProjectPath } from '../lib/project-detection.js';
 import { Logger } from '../utils/logger.js';
 import type { ProjectInfo } from '../types/index.js';
+import { realpathSync } from 'node:fs';
 
 const logger = new Logger('ProjectDetection');
 
@@ -175,9 +176,15 @@ async function demonstratePathResolution(): Promise<void> {
 }
 
 // Run the demonstration
-if (import.meta.url === `file://${process.argv[1]}`) {
-  Promise.all([demonstrateProjectDetection(), demonstratePathResolution()]).catch((error) => {
-    logger.error(`Demo failed: ${error instanceof Error ? error.message : String(error)}`);
-    process.exit(1);
-  });
+if (process.argv[1] !== undefined) {
+  try {
+    if (import.meta.url === `file://${realpathSync(process.argv[1])}`) {
+      Promise.all([demonstrateProjectDetection(), demonstratePathResolution()]).catch((error) => {
+        logger.error(`Demo failed: ${error instanceof Error ? error.message : String(error)}`);
+        process.exit(1);
+      });
+    }
+  } catch {
+    // process.argv[1] may not be resolvable
+  }
 }

@@ -70,21 +70,14 @@ export class HookRunner {
     }
 
     // Create and run hook
-    const hook = new HookClass(hookConfig);
+    const hook = new HookClass({ ...hookConfig, debug: this.debug });
 
     if (this.debug) {
       console.error('[DEBUG] Running hook:', hookName);
       console.error('[DEBUG] Hook config:', JSON.stringify(hookConfig, null, 2));
-      // Set environment variable for the hook to detect debug mode
-      process.env['CLAUDEKIT_DEBUG'] = 'true';
     }
 
     const result = await hook.run(payload);
-
-    // Clean up environment variable
-    if (this.debug) {
-      delete process.env['CLAUDEKIT_DEBUG'];
-    }
 
     // Log hook execution
     const executionTime = Date.now() - startTime;

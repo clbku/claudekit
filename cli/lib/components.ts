@@ -943,29 +943,39 @@ export function resolveAllDependencies(
     registry.dependencyGraph = buildDependencyGraph(registry);
   }
 
-  // const graph = registry.dependencyGraph; // Unused
   const required = new Set<string>(componentIds);
   const resolved = new Set<string>();
   const visiting = new Set<string>();
 
   // Recursively add all dependencies
-  function addDependencies(id: string, depth = 0): void {
+  function addDependencies(id: string, depPath: string[] = [], depth = 0): void {
     if (depth > maxDepth) {
       console.warn(`Max dependency depth reached for ${id}`);
       return;
     }
 
-    if (resolved.has(id) || visiting.has(id)) {
+    if (resolved.has(id)) {
+      return;
+    }
+
+    if (visiting.has(id)) {
+      // Circular dependency detected — throw with clear cycle path
+      const cycleStart = depPath.indexOf(id);
+      if (cycleStart !== -1) {
+        const cycle = [...depPath.slice(cycleStart), id];
+        throw new Error(`Circular dependency detected: ${cycle.join(' -> ')}`);
+      }
       return;
     }
 
     visiting.add(id);
+    const currentPath = [...depPath, id];
 
     // Add static dependencies (skip external dependencies for recursion)
     const staticDeps = COMPONENT_DEPENDENCIES[id] || [];
     for (const dep of staticDeps) {
       if (!resolved.has(dep) && !EXTERNAL_DEPENDENCIES.has(dep)) {
-        addDependencies(dep, depth + 1);
+        addDependencies(dep, currentPath, depth + 1);
       }
     }
 
@@ -974,7 +984,7 @@ export function resolveAllDependencies(
       const optionalDeps = OPTIONAL_DEPENDENCIES[id] || [];
       for (const dep of optionalDeps) {
         if (!EXTERNAL_DEPENDENCIES.has(dep) && !resolved.has(dep)) {
-          addDependencies(dep, depth + 1);
+          addDependencies(dep, currentPath, depth + 1);
         }
       }
     }
@@ -984,7 +994,7 @@ export function resolveAllDependencies(
     if (component) {
       for (const dep of component.metadata.dependencies) {
         if (!EXTERNAL_DEPENDENCIES.has(dep) && !resolved.has(dep)) {
-          addDependencies(dep, depth + 1);
+          addDependencies(dep, currentPath, depth + 1);
         }
       }
     }

@@ -14,6 +14,7 @@
 import { Installer, installComponents } from '../lib/installer.js';
 import { discoverComponents, registryToComponents } from '../lib/components.js';
 import type { Component, InstallProgress } from '../types/config.js';
+import { realpathSync } from 'node:fs';
 
 // ============================================================================
 // Example 1: Basic Installation with Progress Tracking
@@ -287,6 +288,12 @@ async function main(): Promise<void> {
 }
 
 // Run if executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(console.error);
+if (process.argv[1] !== undefined) {
+  try {
+    if (import.meta.url === `file://${realpathSync(process.argv[1])}`) {
+      main().catch(console.error);
+    }
+  } catch {
+    // process.argv[1] may not be resolvable
+  }
 }

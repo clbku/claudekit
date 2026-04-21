@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cd:*), Bash(git init:*), Bash(gh repo:*), Bash(git add:*), Bash(git commit:*), Bash(git remote:*), Bash(git push:*), Bash(git branch:*), Bash(git --no-pager log:*), Bash(echo:*), Bash(ls:*), Bash(test:*), Write, TodoWrite
+allowed-tools: Bash(mkdir:*), Bash(cd:*), Bash(git init:*), Bash(gh repo:*), Bash(git add:*), Bash(git commit:*), Bash(git remote:*), Bash(git push:*), Bash(git branch:*), Bash(git --no-pager log:*), Bash(echo:*), Bash(ls:*), Bash(test:*), Write, Read
 description: Create a new GitHub repository with proper setup including directory creation, git initialization, and remote configuration
 category: workflow
 argument-hint: "<repository-name>"

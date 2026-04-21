@@ -38,7 +38,7 @@ export class TypecheckChangedHook extends BaseHook {
     this.progress(`📘 Type-checking ${filePath}`);
 
     // Run TypeScript compiler
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
     const command = config.command ?? `${packageManager.exec} ${packageManager.execArgs.join(' ')} tsc --noEmit`;
     const result = config.command !== undefined
       ? await this.execCommand(config.command, [], { cwd: projectRoot })

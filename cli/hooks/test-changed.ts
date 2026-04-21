@@ -28,7 +28,7 @@ export class TestChangedHook extends BaseHook {
 
   async execute(context: HookContext): Promise<HookResult> {
     const { filePath, projectRoot, packageManager } = context;
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Check if file should be processed based on extensions
     if (!shouldProcessFileByExtension(filePath, config)) {

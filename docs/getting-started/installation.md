@@ -35,8 +35,8 @@ This will:
 # List available hooks
 claudekit-hooks list
 
-# Test a hook manually
-claudekit-hooks test typecheck-changed --file src/index.ts
+# Run a hook manually with a test payload
+echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
 ```
 
 ## Basic Configuration
@@ -171,7 +171,7 @@ claudekit provides powerful slash commands for Claude Code:
 
 ```bash
 # Test hooks outside Claude Code
-claudekit-hooks test lint-changed --file src/problematic.js
+echo '{"tool_input":{"file_path":"src/problematic.js"}}' | claudekit-hooks run lint-changed
 
 # Check hook configuration
 claudekit list --verbose
@@ -206,19 +206,19 @@ You can configure hooks in `.claudekit/config.json`:
 
 1. Check the matcher pattern in `.claude/settings.json`
 2. Verify the hook is installed: `claudekit list`
-3. Test manually: `claudekit-hooks test <hook-name>`
+3. Test manually: `echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed`
 
 ### TypeScript Errors
 
 1. Ensure TypeScript is installed in your project
 2. Check for `tsconfig.json`
-3. Test with: `claudekit-hooks test typecheck-changed`
+3. Test with: `echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed`
 
 ### ESLint Issues
 
 1. Verify ESLint configuration exists
 2. Check supported file extensions
-3. Test with: `claudekit-hooks test lint-changed`
+3. Test with: `echo '{"tool_input":{"file_path":"src/problematic.js"}}' | claudekit-hooks run lint-changed`
 
 ## Next Steps
 

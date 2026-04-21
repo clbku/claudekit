@@ -45,11 +45,13 @@ fail() {
 
 assert_pass() {
     local message="${1:-Test passed}"
+    ((TESTS_RUN++))
     pass "$message"
 }
 
 assert_fail() {
     local message="${1:-Test failed}"
+    ((TESTS_RUN++))
     fail "$message"
 }
 

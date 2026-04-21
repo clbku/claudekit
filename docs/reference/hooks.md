@@ -41,8 +41,8 @@ The `claudekit-hooks` command provides several subcommands:
 # Run a specific hook
 claudekit-hooks run <hook-name>
 
-# Test a hook with a specific file
-claudekit-hooks test <hook-name> --file <path>
+# Run a hook manually with a test payload
+echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
 
 # List all available hooks
 claudekit-hooks list
@@ -677,17 +677,14 @@ claudekit-hooks stats
 claudekit-hooks recent 5
 ```
 
-### Advanced Testing Options
+### Manual Hook Testing
 
 ```bash
-# Test with custom configuration
-claudekit-hooks test typecheck-changed --file src/index.ts --config .claudekit/test-config.json
+# Run a hook manually with a test payload
+echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
 
-# Test with timeout override
-claudekit-hooks test lint-changed --file src/app.js --timeout 60000
-
-# Dry run (show what would happen without executing)
-claudekit-hooks test test-changed --file src/utils.js --dry-run
+# Run a hook for a different file type
+echo '{"tool_input":{"file_path":"src/app.js"}}' | claudekit-hooks run lint-changed
 ```
 
 ### Debug Mode
@@ -695,11 +692,11 @@ claudekit-hooks test test-changed --file src/utils.js --dry-run
 Enable debug output for troubleshooting:
 
 ```bash
-# Set environment variable
+# Set environment variable for debug logging
 export CLAUDEKIT_DEBUG=true
 
-# Or use the debug flag
-claudekit-hooks test typecheck-changed --file src/index.ts --debug
+# Run the hook with debug output
+echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
 ```
 
 ## Performance Profiling
@@ -1095,7 +1092,7 @@ claudekit-hooks run create-checkpoint      2,100ms   0            0         ✓
 
 3. Test the hook directly:
    ```bash
-   claudekit-hooks test <hook-name> --file <path>
+   echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
    ```
 
 4. Run Claude Code with debug flag:
@@ -1206,7 +1203,7 @@ claudekit-hooks run create-checkpoint      2,100ms   0            0         ✓
 3. **View detailed logs**:
    ```bash
    export CLAUDEKIT_DEBUG=true
-   claudekit-hooks test <hook-name> --file <path>
+   echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed
    ```
 
 4. **Report issues**:

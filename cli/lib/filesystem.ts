@@ -34,22 +34,31 @@ export function validateProjectPath(input: string): boolean {
     return false;
   }
 
-  // Check for directory traversal attempts in the original input
-  if (input.includes('..')) {
+  // Normalize the path first to resolve relative segments
+  const normalizedPath = path.normalize(path.resolve(input));
+
+  // Reject relative paths containing ".." - these are traversal attempts
+  // (e.g., "../../etc/passwd", "../config")
+  // Allow absolute paths with ".." (e.g., "/home/user/project/../other")
+  // since they resolve predictably after normalization
+  if (!path.isAbsolute(input) && input.includes('..')) {
     return false;
   }
 
-  // Normalize the path to handle relative paths and resolve symlinks
-  const normalizedPath = path.resolve(input);
-
-  // Double-check for directory traversal after normalization
-  if (normalizedPath.includes('..') || normalizedPath !== path.normalize(normalizedPath)) {
+  // Ensure path is not inside system directories (prefix match)
+  // Note: /var and /tmp are NOT blanket-blocked because:
+  //   - macOS uses /var/folders/.../T/ for temp directories
+  //   - Linux uses /tmp/ for temp directories
+  // Instead, only block specific sensitive subdirectories of /var
+  const systemPaths = ['/', '/usr', '/bin', '/sbin', '/etc', '/boot', '/dev', '/proc', '/sys',
+    '/var/log', '/var/db', '/var/run', '/var/spool', '/var/root', '/var/vm', '/var/at'];
+  if (systemPaths.some((sysPath) => normalizedPath === sysPath || normalizedPath.startsWith(`${sysPath}/`))) {
     return false;
   }
 
-  // Ensure path is not root or system directories
-  const systemPaths = ['/', '/usr', '/bin', '/sbin', '/etc', '/var', '/tmp'];
-  if (systemPaths.includes(normalizedPath)) {
+  // Block temp root directories themselves but allow subdirectories (tests/tools use temp dirs)
+  const tempRoots = ['/tmp', '/private/tmp'];
+  if (tempRoots.includes(normalizedPath)) {
     return false;
   }
 

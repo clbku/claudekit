@@ -271,12 +271,31 @@ export function formatError(title: string, details: string, instructions: string
   return `BLOCKED: ${title}\n\n${details}\n\nMANDATORY INSTRUCTIONS:\n${instructionsList}`;
 }
 
+/**
+ * Validate that a tool name is safe to execute.
+ * Rejects names containing shell metacharacters, spaces, or path traversal.
+ */
+function isValidToolName(tool: string): boolean {
+  return /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(tool);
+}
+
+// Make function available for testing
+export { isValidToolName };
+
 // Tool availability checking
 export async function checkToolAvailable(
   tool: string,
   configFile: string,
   projectRoot: string
 ): Promise<boolean> {
+  // Validate tool name to prevent command injection
+  if (!isValidToolName(tool)) {
+    if (process.env['CLAUDEKIT_DEBUG'] === 'true') {
+      console.error(`[DEBUG] Rejected unsafe tool name: ${tool}`);
+    }
+    return false;
+  }
+
   // Check config file exists
   if (!(await fs.pathExists(path.join(projectRoot, configFile)))) {
     return false;

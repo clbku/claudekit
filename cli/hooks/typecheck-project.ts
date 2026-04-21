@@ -35,7 +35,7 @@ export class TypecheckProjectHook extends BaseHook {
 
     this.progress('Running project-wide TypeScript validation...');
 
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Use custom command if configured, otherwise use package manager's exec
     const result = config.command !== undefined

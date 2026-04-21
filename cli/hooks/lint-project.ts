@@ -38,7 +38,7 @@ export class LintProjectHook extends BaseHook {
     if (await detectBiome(projectRoot)) {
       if (await checkToolAvailable('biome', 'biome.json', projectRoot)) {
         this.progress('Running project-wide Biome validation...');
-        const config = this.loadConfig();
+        const config = await this.loadConfig();
         const biomeResult = await this.runBiome(projectRoot, packageManager, config);
         results.push({ tool: 'Biome', result: biomeResult });
         
@@ -104,7 +104,7 @@ export class LintProjectHook extends BaseHook {
     projectRoot: string,
     packageManager: { exec: string; execArgs: string[] }
   ): Promise<ExecResult> {
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
     const eslintArgs = [...packageManager.execArgs, 'eslint', '.', '--ext', '.js,.jsx,.ts,.tsx'];
 
     return await this.execCommand(packageManager.exec, eslintArgs, {

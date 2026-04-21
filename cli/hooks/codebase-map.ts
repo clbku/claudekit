@@ -63,7 +63,7 @@ export class CodebaseMapHook extends BaseHook {
       return { exitCode: 0 };
     }
 
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Debug output to help diagnose configuration issues
     if (process.env['DEBUG'] === 'true') {

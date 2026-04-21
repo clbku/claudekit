@@ -177,7 +177,7 @@ describe('HookRunner', () => {
       await runner.run('typecheck-changed');
 
       expect(fs.readJson).toHaveBeenCalledWith(path.resolve('.claudekit/config.json'));
-      expect(MockHook).toHaveBeenCalledWith(config.hooks['typecheck-changed']);
+      expect(MockHook).toHaveBeenCalledWith({ ...config.hooks['typecheck-changed'], debug: false });
     });
 
     it('should use empty config when hook not configured', async () => {
@@ -196,7 +196,7 @@ describe('HookRunner', () => {
       const exitCode = await runner.run('typecheck-changed');
 
       expect(exitCode).toBe(0);
-      expect(MockHook).toHaveBeenCalledWith({});
+      expect(MockHook).toHaveBeenCalledWith({ debug: false });
     });
 
     it('should handle JSON response from hook', async () => {
@@ -278,7 +278,7 @@ describe('HookRunner', () => {
 
       await runner.run('config-test');
 
-      expect(MockHook).toHaveBeenCalledWith(hookConfig);
+      expect(MockHook).toHaveBeenCalledWith({ ...hookConfig, debug: false });
     });
   });
 
@@ -393,7 +393,7 @@ describe('HookRunner', () => {
       expect(exitCode).toBe(0);
       expect(utils.readStdin).toHaveBeenCalled();
       expect(fs.readJson).toHaveBeenCalled();
-      expect(MockHook).toHaveBeenCalledWith(config.hooks['typecheck-changed']);
+      expect(MockHook).toHaveBeenCalledWith({ ...config.hooks['typecheck-changed'], debug: false });
       expect(mockHookInstance.run).toHaveBeenCalledWith(payload);
     });
 

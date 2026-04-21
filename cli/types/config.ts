@@ -143,6 +143,7 @@ export const ComponentSchema = z.object({
 export const ProjectInfoSchema = z.object({
   hasTypeScript: z.boolean(),
   hasESLint: z.boolean(),
+  hasBiome: z.boolean().optional(),
   hasPrettier: z.boolean().optional(),
   hasJest: z.boolean().optional(),
   hasVitest: z.boolean().optional(),

@@ -43,7 +43,7 @@ export class TestProjectHook extends BaseHook {
 
     this.progress('Running project test suite...');
 
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
     const testCommand = config.command ?? packageManager.test;
 
     // Split testCommand into binary + args for spawn (e.g., "pnpm test" -> ["pnpm", "test"])
@@ -71,7 +71,7 @@ export class TestProjectHook extends BaseHook {
         `The test suite was terminated${durationText} due to the hook timeout limit.\n`
       );
 
-      const config = this.loadConfig();
+      const config = await this.loadConfig();
       if (config.command !== undefined && config.command !== '') {
         console.error(`Current command: ${config.command}\n`);
         console.error('RECOMMENDED ACTIONS:');

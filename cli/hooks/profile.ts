@@ -95,7 +95,7 @@ function truncateMiddle(str: string, maxLength: number = PERFORMANCE_THRESHOLDS.
   const frontChars = Math.ceil(charsToShow / 2);
   const backChars = Math.floor(charsToShow / 2);
   
-  return str.substr(0, frontChars) + ellipsis + str.substr(str.length - backChars);
+  return str.substring(0, frontChars) + ellipsis + str.substring(str.length - backChars);
 }
 
 /**

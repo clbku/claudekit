@@ -26,7 +26,7 @@ export class LintChangedHook extends BaseHook {
 
   async execute(context: HookContext): Promise<HookResult> {
     const { filePath, projectRoot, packageManager } = context;
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Check if file should be processed based on extensions
     if (!shouldProcessFileByExtension(filePath, config)) {
@@ -62,7 +62,7 @@ export class LintChangedHook extends BaseHook {
         const eslintResult = await this.runEslint(validFilePath, projectRoot, packageManager);
         results.push({ tool: 'ESLint', result: eslintResult });
         
-        if (eslintResult.exitCode === 0 && !this.hasEslintErrors(eslintResult.stdout)) {
+        if (eslintResult.exitCode === 0) {
           this.success('ESLint check passed!');
         } else {
           const errorMessage = formatESLintErrors(eslintResult);
@@ -97,7 +97,7 @@ export class LintChangedHook extends BaseHook {
     projectRoot: string,
     packageManager: PackageManager
   ): Promise<ExecResult> {
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Build Biome arguments — pass filePath directly, no shell quoting needed with spawn
     const biomeArgs = [...packageManager.execArgs, 'biome', 'check', filePath];
@@ -118,7 +118,7 @@ export class LintChangedHook extends BaseHook {
     projectRoot: string,
     packageManager: PackageManager
   ): Promise<ExecResult> {
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Build ESLint arguments — pass filePath directly, no shell quoting needed with spawn
     const eslintArgs: string[] = [...packageManager.execArgs, 'eslint'];
@@ -141,10 +141,5 @@ export class LintChangedHook extends BaseHook {
       timeout: config.timeout ?? 30000,
     });
   }
-
-  private hasEslintErrors(output: string): boolean {
-    return output.includes('error') || output.includes('warning');
-  }
-
 
 }

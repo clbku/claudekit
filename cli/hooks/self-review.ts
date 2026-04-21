@@ -164,7 +164,7 @@ export class SelfReviewHook extends BaseHook {
     }
 
     // Load configuration
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     if (process.env['DEBUG'] === 'true') {
       console.error('Self-review: Checking for file changes since last review');

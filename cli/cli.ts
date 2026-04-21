@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { createRequire } from 'module';
+import { realpathSync } from 'node:fs';
 import { Logger } from './utils/logger.js';
 
 // For ESM, we need to create require to load package.json
@@ -254,10 +255,17 @@ export async function runCli(): Promise<void> {
 // Auto-run if this file is executed directly
 // In CommonJS build, import.meta.url is undefined, so we check __filename
 let isMainModule = false;
-if (typeof import.meta !== 'undefined' && import.meta.url) {
-  isMainModule = import.meta.url === `file://${process.argv[1]}`;
-} else if (typeof __filename !== 'undefined') {
-  isMainModule = __filename === process.argv[1];
+if (process.argv[1] !== undefined) {
+  try {
+    const argv1Real = realpathSync(process.argv[1]);
+    if (typeof import.meta !== 'undefined' && import.meta.url) {
+      isMainModule = import.meta.url === `file://${argv1Real}`;
+    } else if (typeof __filename !== 'undefined') {
+      isMainModule = __filename === argv1Real;
+    }
+  } catch {
+    // process.argv[1] may not be resolvable in some environments; skip auto-run
+  }
 }
 
 if (isMainModule) {

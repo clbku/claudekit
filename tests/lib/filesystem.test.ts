@@ -118,7 +118,8 @@ describe('filesystem module', () => {
 
     it('should return false for paths with directory traversal', () => {
       expect(validateProjectPath('/some/path/../../../etc')).toBe(false);
-      expect(validateProjectPath('../../etc/passwd')).toBe(false);
+      // Use absolute traversal to avoid cwd-dependent results
+      expect(validateProjectPath('/tmp/../../etc/passwd')).toBe(false);
     });
 
     it('should return false for paths with control characters', () => {

@@ -8,6 +8,9 @@
 // Re-export config types
 export * from './config.js';
 
+// Import for use within this file (export * doesn't make types available locally)
+import type { ValidationResult as ConfigValidationResult } from './config.js';
+
 // ============================================================================
 // Core Platform and Component Types
 // ============================================================================
@@ -377,31 +380,7 @@ export interface DoctorOptions extends GlobalOptions {
 // Validation and Results
 // ============================================================================
 
-/**
- * Validation result for a single check
- */
-export interface ValidationResult {
-  /** Whether the validation passed */
-  passed: boolean;
-
-  /** Human-readable message */
-  message: string;
-
-  /** Validation type that was performed */
-  type: ValidationType;
-
-  /** Severity level of any issues found */
-  severity?: 'info' | 'warning' | 'error';
-
-  /** Detailed error information */
-  details?: string;
-
-  /** Suggestions for fixing issues */
-  suggestions?: string[];
-
-  /** Whether the issue can be auto-fixed */
-  autoFixable?: boolean;
-}
+// ValidationResult is re-exported from config.ts via `export * from './config.js'`
 
 /**
  * Comprehensive validation report
@@ -411,7 +390,7 @@ export interface ValidationReport {
   passed: boolean;
 
   /** Individual validation results */
-  results: ValidationResult[];
+  results: ConfigValidationResult[];
 
   /** Summary statistics */
   summary: {

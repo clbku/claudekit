@@ -8,6 +8,11 @@ type IgnoreEngine = { add: (patterns: string[]) => void; ignores: (path: string)
 
 
 export class FileProtectionService {
+  /** Pre-compiled regex from non-negation default patterns for fallback basename matching */
+  private static readonly FALLBACK_REGEXES = DEFAULT_PATTERNS
+    .filter(g => !g.startsWith('!'))
+    .map((g: string) => globToRegExp(g, { flags: 'i', extended: true, globstar: true }));
+
   private ignorePatterns: string[] = [];
   private ignoreFilesFound: string[] = [];
   private ignoreEngine: IgnoreEngine | null = null;
@@ -73,10 +78,12 @@ export class FileProtectionService {
         return this.ignoreEngine.ignores(relativePath);
       }
     }
-    
-    // Fallback: basic check against default patterns via glob regex (only when no ignore engine)
-    const fallbackUnion = DEFAULT_PATTERNS.map((g: string) => globToRegExp(g, { flags: 'i', extended: true, globstar: true }).test(filePath)).some(Boolean);
-    return fallbackUnion;
+
+    // If we got here, all paths were the project root or outside it.
+    // Still check the basename against non-negation default patterns as a safety net,
+    // so sensitive filenames like .env are protected even outside the project root.
+    const baseName = path.basename(resolvedPath);
+    return FileProtectionService.FALLBACK_REGEXES.some(re => re.test(baseName));
   }
 
   private async parseIgnoreFile(filePath: string): Promise<string[]> {

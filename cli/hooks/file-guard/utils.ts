@@ -1,28 +1,28 @@
 /**
  * Shared utilities for file-guard service classes
- * Provides common fallback implementations when optional dependencies aren't available
  */
 
 import * as path from 'node:path';
+import picomatch from 'picomatch';
 
 /**
- * Fallback implementation of glob-to-regexp when picomatch isn't available
- * Converts basic glob patterns to RegExp objects
+ * Convert a glob pattern to a RegExp using picomatch.
+ * Handles all standard glob syntax: *, **, ?, [abc], {a,b}, negation, etc.
  */
 export const globToRegExp = (glob: string, options?: Record<string, unknown>): RegExp => {
   const flags = (options?.['flags'] as string) || '';
-  
-  // Escape special regex characters except * which we want to convert to .*
-  const escaped = glob
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')  // Escape special chars
-    .replace(/\\\*/g, '.*');                  // Convert \* back to .*
-  
-  return new RegExp(escaped, flags);
+  const re = picomatch.makeRe(glob, {
+    ...(options ?? {}),
+  });
+  // picomatch.makeRe returns a RegExp with its own flags; re-apply user flags if needed
+  if (flags && re.flags !== flags) {
+    return new RegExp(re.source, flags);
+  }
+  return re;
 };
 
 /**
- * Fallback implementation of untildify when the package isn't available
- * Expands ~ to home directory path
+ * Expand ~ to home directory path
  */
 export const untildify = (str: string): string => {
   if (str.startsWith('~')) {

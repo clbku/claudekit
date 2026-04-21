@@ -9,10 +9,12 @@ interface CreateCheckpointConfig {
   maxCheckpoints?: number;
 }
 
-/** Pre-compiled regex from sensitive patterns for fast matching */
-const SENSITIVE_REGEXES = DEFAULT_PATTERNS.map(
-  (p) => globToRegExp(p, { flags: 'i', extended: true, globstar: true }),
-);
+/** Pre-compiled regex from sensitive patterns for fast matching.
+ *  Negation patterns (starting with !) are excluded because picomatch
+ *  converts them to negative-lookahead regex that matches everything. */
+const SENSITIVE_REGEXES = DEFAULT_PATTERNS
+  .filter((p) => !p.startsWith('!'))
+  .map((p) => globToRegExp(p, { flags: 'i', extended: true, globstar: true }));
 
 function isSensitiveFile(filePath: string): boolean {
   return SENSITIVE_REGEXES.some((re) => re.test(filePath));

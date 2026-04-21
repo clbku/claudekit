@@ -41,7 +41,7 @@ export class ThinkingLevelHook extends BaseHook {
   }
 
   async execute(_context: HookContext): Promise<HookResult> {
-    const config = this.loadConfig();
+    const config = await this.loadConfig();
 
     // Get the configured level (default to 2)
     const level = config.level ?? 2;

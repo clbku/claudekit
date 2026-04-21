@@ -1,7 +1,7 @@
 ---
 description: Run quality checks and automatically fix issues using concurrent agents
 category: workflow
-allowed-tools: Bash(npm:*), Bash(npx:*), Bash(node:*), Bash(git stash:*), Bash(git diff:*), Bash(git status:*), Bash(git --no-pager:*), Bash(cat:*), Bash(echo:*), Task, TodoWrite, Read, Edit, MultiEdit
+allowed-tools: Bash(npm:*), Bash(npx:*), Bash(node:*), Bash(git stash:*), Bash(git diff:*), Bash(git status:*), Bash(git --no-pager:*), Bash(cat:*), Bash(echo:*), Task, TaskCreate, TaskUpdate, TaskList, Read, Edit, MultiEdit
 ---
 
 # Validate and Fix
@@ -96,7 +96,7 @@ Launch multiple agents concurrently for independent, parallelizable tasks:
 - Each parallel agent should have non-overlapping responsibilities to avoid conflicts
 - Agents working on related files must understand the shared interfaces
 - Each agent verifies their fixes work before completing
-- Track progress with TodoWrite
+- Track progress with TaskCreate/TaskUpdate/TaskList
 - Execute phases sequentially: complete Phase 1 before Phase 2, etc.
 - Create checkpoint after each successful phase
 

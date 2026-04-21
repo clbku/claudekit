@@ -345,8 +345,8 @@ Hooks are managed via the embedded system:
 # List available hooks
 claudekit-hooks list
 
-# Test a hook
-claudekit-hooks test typecheck-changed --file test.ts
+# Run a hook manually
+echo '{"tool_input":{"file_path":"test.ts"}}' | claudekit-hooks run typecheck-changed
 ```
 
 Include shebang and error handling:
@@ -476,7 +476,7 @@ Make hooks self-contained:
 - For embedded hooks: Verify `claudekit-hooks` is installed: `which claudekit-hooks`
 - For embedded hooks: Run `claudekit-hooks list` to see available hooks
 - Verify matcher pattern matches your files
-- Test hooks directly: `claudekit-hooks test <hook-name> --file <path>`
+- Test hooks directly: `echo '{"tool_input":{"file_path":"src/index.ts"}}' | claudekit-hooks run typecheck-changed`
 
 **2. Settings not applying:**
 - Check file name spelling (settings.json, not setting.json)
@@ -492,13 +492,13 @@ Make hooks self-contained:
 
 **Test embedded hooks:**
 ```bash
-claudekit-hooks test typecheck-changed --file test.ts
-claudekit-hooks test lint-changed --file app.js
+echo '{"tool_input":{"file_path":"test.ts"}}' | claudekit-hooks run typecheck-changed
+echo '{"tool_input":{"file_path":"app.js"}}' | claudekit-hooks run lint-changed
 ```
 
 **Test embedded hooks:**
 ```bash
-claudekit-hooks test python-lint --file test.py
+echo '{"tool_input":{"file_path":"test.py"}}' | claudekit-hooks run python-lint
 ```
 
 **Validate settings:**

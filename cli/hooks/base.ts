@@ -40,6 +40,7 @@ export interface HookResult {
 export interface HookConfig {
   command?: string;
   timeout?: number;
+  debug?: boolean;
   [key: string]: unknown; // Hook-specific config
 }
 
@@ -67,7 +68,7 @@ export abstract class BaseHook {
 
   constructor(config: HookConfig = {}) {
     this.config = config;
-    this.debug = process.env['CLAUDEKIT_DEBUG'] === 'true' || false;
+    this.debug = config.debug === true || process.env['CLAUDEKIT_DEBUG'] === 'true';
   }
 
   // Main execution method - implements common flow
@@ -97,7 +98,7 @@ export abstract class BaseHook {
     if (payload.hook_event_name === 'SubagentStop') {
       const isDisabled = await isHookDisabledForSubagent(this.name, transcriptPath);
       if (isDisabled) {
-        if (process.env['CLAUDEKIT_DEBUG'] === 'true') {
+        if (this.debug) {
           console.error(`${this.name}: Skipping - disabled for subagent`);
         }
         return { exitCode: 0, suppressOutput: true };

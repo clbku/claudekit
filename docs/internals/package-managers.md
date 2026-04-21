@@ -118,9 +118,9 @@ To test package manager detection with embedded hooks:
 2. **Verify embedded hooks work correctly**:
    ```bash
    # Test that hooks use the correct package manager
-   claudekit-hooks test typecheck-changed --file test.ts
-   claudekit-hooks test lint-changed --file test.js
-   
+   echo '{"tool_input":{"file_path":"test.ts"}}' | claudekit-hooks run typecheck-changed
+   echo '{"tool_input":{"file_path":"test.js"}}' | claudekit-hooks run lint-changed
+
    # The hooks should automatically use npm, yarn, or pnpm
    # based on which lock file is present
    ```

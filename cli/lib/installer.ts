@@ -62,6 +62,7 @@ export interface InstallPlan {
   components: Component[];
   target: InstallTarget;
   directories: string[];
+  /** Backup paths that would be created (used for dry-run reporting only) */
   backupPaths: string[];
   estimatedDuration: number;
   warnings: string[];
@@ -416,13 +417,6 @@ export async function createInstallPlan(
 
     // Create copy steps for each target
     for (const target of targets) {
-      // Check if file exists for backup planning
-      if ((await pathExists(target)) && options.backup !== false) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const backupPath = `${target}.backup-${timestamp}`;
-        backupPaths.push(backupPath);
-      }
-
       steps.push({
         id: `copy-${component.id}-to-${target}`,
         type: 'copy-file',
@@ -622,7 +616,7 @@ export async function simulateInstallation(
   logger.info(`Would have:`);
   logger.info(`  - Created ${plan.directories.length} directories`);
   logger.info(`  - Installed ${plan.components.length} components`);
-  logger.info(`  - Created ${plan.backupPaths.length} backups`);
+  logger.info(`  - Would create ${plan.backupPaths.length} backups`);
 
   if (warnings.length > 0) {
     logger.warn('\nWarnings:');
@@ -634,7 +628,7 @@ export async function simulateInstallation(
     installedComponents: plan.components,
     modifiedFiles: plan.steps.filter((s) => s.type === 'copy-file').map((s) => s.target),
     createdDirectories: plan.directories,
-    backupFiles: plan.backupPaths,
+    backupFiles: plan.backupPaths as string[],
     warnings,
     errors,
     duration,
@@ -725,7 +719,7 @@ export async function executeInstallation(
       installedComponents: plan.components,
       modifiedFiles: transaction.getCreatedFiles(),
       createdDirectories: transaction.getCreatedDirs(),
-      backupFiles: transaction.getBackupFiles(),
+      backupFiles: transaction.getBackupFiles() as string[],
       warnings,
       errors,
       duration,

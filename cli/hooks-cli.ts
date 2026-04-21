@@ -8,6 +8,7 @@
 import { Command } from 'commander';
 import { setImmediate } from 'node:timers';
 import * as path from 'node:path';
+import { realpathSync } from 'node:fs';
 import { HookRunner } from './hooks/runner.js';
 import { profileHooks } from './hooks/profile.js';
 import { SessionHookManager } from './hooks/session-utils.js';
@@ -147,15 +148,10 @@ async function discoverTranscriptUuid(transcriptDir: string): Promise<string | n
 
 // Helper function to generate session marker hash and extract transcript UUID
 async function getSessionIdentifier(): Promise<string | null> {
-  // Generate marker hash for session connection (as per spec)
-  const { exec } = await import('node:child_process');
-  const { promisify } = await import('node:util');
-  const execAsync = promisify(exec);
-  
   try {
-    // Generate POSIX-compatible hash using /dev/urandom, od, and tr
-    const { stdout: hash } = await execAsync("head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \\n'");
-    const sessionHash = hash.trim();
+    // Generate random hex string using Node.js crypto (cross-platform)
+    const { randomBytes } = await import('node:crypto');
+    const sessionHash = randomBytes(4).toString('hex');
     
     // Inject hash as hidden comment to connect transcript with session
     console.log(`<!-- claudekit-session-marker:${sessionHash} -->`);
@@ -550,10 +546,17 @@ export function createHooksCLI(): Command {
 // Entry point - check if this file is being run directly
 // In CommonJS build, import.meta.url is undefined, so we check __filename
 let isMainModule = false;
-if (typeof import.meta !== 'undefined' && import.meta.url) {
-  isMainModule = import.meta.url === `file://${process.argv[1]}`;
-} else if (typeof __filename !== 'undefined') {
-  isMainModule = __filename === process.argv[1];
+if (process.argv[1] !== undefined) {
+  try {
+    const argv1Real = realpathSync(process.argv[1]);
+    if (typeof import.meta !== 'undefined' && import.meta.url) {
+      isMainModule = import.meta.url === `file://${argv1Real}`;
+    } else if (typeof __filename !== 'undefined') {
+      isMainModule = __filename === argv1Real;
+    }
+  } catch {
+    // process.argv[1] may not be resolvable in some environments; skip auto-run
+  }
 }
 
 if (isMainModule) {

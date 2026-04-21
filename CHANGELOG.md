@@ -7,6 +7,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-04-21
+
+### Security
+- **File-Guard globToRegExp Bypass**: Fixed critical security bypass vulnerability in file-guard hook
+  - Replaced custom globToRegExp implementation with picomatch library for proper pattern matching
+  - Fixed bypass where negation patterns and complex globs could be circumvented
+  - Enhanced path validation to prevent directory traversal attacks
+  - Added comprehensive tests for bypass prevention
+- **Command Injection Prevention**: Added tool name validation to prevent command injection attacks
+  - Validates tool names before execution to block malicious input
+  - Prevents arbitrary command execution through tool name manipulation
+- **Path Traversal Fix**: Fixed validateProjectPath rejecting valid paths while allowing traversal
+  - Corrected path validation logic to properly reject traversal attempts
+  - Now correctly accepts valid project paths that were previously rejected
+- **Arguments Sanitization**: Sanitized $ARGUMENTS in agents-md/cli.md command
+  - Prevents command injection through user-provided arguments
+  - Properly escapes and validates argument input
+
+### Fixed
+- **File Protection False Positives**: Fixed false positive denials in file-guard and create-checkpoint hooks
+  - Filter negation patterns (starting with `!`) when converting globs to regex
+  - Fixed picomatch negative-lookahead regex matching everything, causing false positives
+  - Changed matching from full path to basename for more accurate detection
+  - Prevents legitimate operations like `ls .` in temp directories from being blocked
+- **Circular Dependency Handling**: Fixed throw inconsistency with cached dependency graphs
+  - Ensures consistent error handling when circular dependencies are detected
+  - Maintains graph cache integrity during error conditions
+- **Duplicate Backup Creation**: Removed duplicate backup creation in installer
+  - Fixed installer creating redundant backup files during setup
+  - Reduces disk usage and installation time
+- **Test Framework Integration**: Fixed broken test-setup-agents.sh using non-existent framework functions
+  - Updated test setup script to use valid framework functions
+  - Improved test reliability and CI/CD integration
+- **Deprecated Task API**: Replaced deprecated TodoWrite with TaskCreate/TaskUpdate in commands
+  - Updated all commands to use current Claude Code task API
+  - Ensures compatibility with latest Claude Code versions
+- **Missing Await Calls**: Fixed missing await calls in 9 hook files after async refactor
+  - Added proper await statements for asynchronous operations
+  - Prevents race conditions and ensures correct execution order
+  - Affects hooks: codebase-map, lint-changed, lint-project, self-review, test-changed, test-project, thinking-level, typecheck-changed, typecheck-project
+- **Linting False Positives**: Removed unreliable hasEslintErrors string matching in lint-changed hook
+  - Fixed ESLint error detection using more reliable parsing methods
+  - Reduces false positives in linting feedback
+
+### Reliability
+- **Hook Runner Race Condition**: Resolved debug mode race condition in runner.ts
+  - Added context flags to prevent concurrent debug mode modifications
+  - Eliminates race conditions during hook execution
+- **Random Number Generation**: Replaced platform-dependent shell hash with crypto.randomBytes
+  - Uses cryptographically secure random number generation
+  - Ensures consistent behavior across different platforms
+- **Module Detection**: Fixed isMainModule detection with realpathSync for symlinks
+  - Properly resolves symlinks when detecting main module
+  - Improves reliability in symlinked installation scenarios
+- **CI/CD Alignment**: Fixed CI Node.js version mismatch (aligned release.yml to Node 20)
+  - Updated GitHub Actions workflow to use Node.js 20
+  - Ensures consistent CI/CD environment across all jobs
+- **Configuration Loading**: Added async config loading with cache pattern for backward compatibility
+  - Improved configuration loading performance with caching
+  - Maintains backward compatibility with existing code
+
+### Code Quality
+- **Type Deduplication**: Deduplicated ValidationResult type definition
+  - Removed duplicate type definitions across codebase
+  - Single source of truth for validation result types
+- **Schema Enhancement**: Added hasBiome to ProjectInfoSchema
+  - Enhanced project detection with Biome linting support
+  - Improved automatic linting tool detection
+- **Deprecated String Methods**: Replaced deprecated substr with substring in profile.ts
+  - Updated to use standard String.prototype.substring method
+  - Improves code compatibility and maintainability
+- **Agent References**: Removed 7 non-existent sub-expert references from agents
+  - Cleaned up invalid agent references in documentation
+  - Prevents errors when referencing non-existent experts
+- **Documentation Cleanup**: Removed stale Gemini/Replit/Cursor references from migration.md
+  - Updated migration guide to reflect current supported tools
+  - Improves documentation accuracy
+- **Command Permissions**: Added missing Read to code-review.md allowed-tools
+  - Fixed code-review command to properly declare Read tool usage
+  - Ensures proper tool permission validation
+
+### Tests & Documentation
+- **Test Counter Fix**: Fixed TESTS_RUN counter not incrementing in assert_pass/assert_fail
+  - Test execution statistics now correctly track completed tests
+  - Improves test reporting and coverage metrics
+- **Testing Plan Rewrite**: Rewrote TESTING_PLAN.md to reflect actual codebase structure
+  - Updated testing documentation to match current implementation
+  - Removed 626 lines of obsolete content
+  - Improved testing guidance for contributors
+- **Documentation References**: Fixed 20 stale claudekit-hooks test references in documentation
+  - Updated all hook test references to current implementation
+  - Improves documentation accuracy and helpfulness
+- **Test Assertions**: Updated filesystem.test.ts for cwd-independent assertions
+  - Fixed tests that were dependent on current working directory
+  - Improved test reliability across different execution contexts
+
 ## [0.9.8] - 2026-04-01
 
 ### Added

@@ -178,7 +178,7 @@ cd your-project
 **Solution**: 
 1. Ensure you have the latest claudekit:
    ```bash
-   npm install -g claudekit@latest
+   npm install -g claudekit-dev@latest
    ```
 2. Check for conflicting lock files
 3. Set explicit packageManager in `.claudekit/config.json`:

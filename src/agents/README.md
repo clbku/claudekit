@@ -1,100 +1,63 @@
 # Claudekit Subagents Library
 
-This directory contains specialized subagents for Claude Code that provide deep expertise in specific technical domains.
+Specialized AI assistants for Claude Code with deep domain expertise.
 
 ## Structure
 
-Subagents are organized by domain:
-- `typescript/` - TypeScript and JavaScript experts
-- `react/` - React and frontend framework experts (future)
-- `testing/` - Testing framework experts (future)
-- `database/` - Database and data layer experts (future)
+```
+src/agents/
+├── README.md                          # This file
+├── oracle.md                          # Deep debugging & analysis
+├── code-review-expert.md              # 6-aspect parallel code review
+├── code-search.md                     # Fast codebase search
+├── triage-expert.md                   # Problem diagnosis & routing
+├── research-expert.md                 # Parallel research with citations
+├── ai-sdk-expert.md                   # Vercel AI SDK v5
+├── cli-expert.md                      # CLI tool development
+├── nestjs-expert.md                   # Nest.js framework
+├── kafka/                             # Apache Kafka
+├── loopback/                          # LoopBack 4 framework
+├── refactoring/                       # Code refactoring
+├── nodejs/                            # Node.js runtime
+├── react/                             # React & performance
+├── framework/                         # Next.js, etc.
+├── frontend/                          # CSS, accessibility
+├── testing/                           # Jest, Vitest, Playwright
+├── typescript/                        # TypeScript, build, types
+├── database/                          # PostgreSQL, MongoDB
+├── build-tools/                       # Webpack, Vite
+├── infrastructure/                    # Docker, GitHub Actions
+├── devops/                            # DevOps & infrastructure
+├── git/                               # Git workflow
+├── code-quality/                      # Linting & formatting
+└── documentation/                     # Documentation expert
+```
 
 ## Format
 
-Each subagent is a markdown file with YAML frontmatter following Claude Code's native format:
+Each agent is a markdown file with YAML frontmatter:
 
 ```yaml
 ---
 name: agent-identifier
-description: Brief description of expertise
+description: Brief description of when to use this agent
 tools: Comma-separated list of allowed tools
 ---
 ```
 
-## Current Agents
+## Adding a New Agent
 
-### TypeScript Expert (`typescript/expert.md`)
-- Comprehensive TypeScript and JavaScript expertise
-- Type system mastery
-- Build configuration optimization
-- Module resolution debugging
-- Migration guidance
+1. Create a `.md` file in the appropriate domain folder
+2. Follow the frontmatter format above
+3. Register in `cli/hooks/registry.ts` if it needs hook integration
+4. Test with `claudekit setup` and verify delegation in Claude Code
 
-## Usage
+## Naming Conventions
 
-Agents are automatically copied to `.claude/agents/` during `claudekit setup`.
+- Lowercase with hyphens: `typescript-expert`
+- Specific but not too narrow: `react-expert` not `react-hooks-expert`
+- Include domain when helpful: `typescript-type-expert`
 
-Claude Code will automatically delegate to these agents based on task context.
+## Agent Authoring
 
-## Contributing
-
-To add a new subagent:
-1. Create a new `.md` file in the appropriate domain folder
-2. Follow the format requirements above
-3. Add the agent to `cli/commands/setup.ts` agents array
-4. Test the agent with real scenarios
-5. Submit a pull request
-
-## Best Practices
-
-1. **Focused Expertise**: Each agent should have a clear domain
-2. **Comprehensive Prompts**: Include all relevant expertise areas
-3. **Practical Examples**: Provide real commands and patterns
-4. **Tool Restrictions**: Only request necessary tools
-5. **Educational Approach**: Explain while solving
-
-## Agent Authoring Guidelines
-
-### System Prompt Structure
-1. Opening statement defining the agent's role
-2. Core Expertise sections with bullet points
-3. Approach methodology (numbered list)
-4. Key commands and tools section
-5. Common patterns with code examples
-6. Best practices relevant to the domain
-
-### Naming Conventions
-- Use lowercase with hyphens: `typescript-expert`, not `TypeScriptExpert`
-- Be specific but not too narrow: `react-expert` not `react-hooks-expert`
-- Include domain in name when helpful: `typescript-type-expert`
-
-### Tool Selection
-Only request tools the agent actually needs:
-- Read, Grep, Glob - for code analysis
-- Edit, MultiEdit, Write - for code modifications
-- Bash - for running commands
-- WebSearch - only if current information needed
-
-### Testing Your Agent
-1. Install the agent: `claudekit setup`
-2. Open a project in Claude Code
-3. Ask questions relevant to the agent's domain
-4. Verify delegation occurs (Claude mentions using the agent)
-5. Test edge cases and complex scenarios
-
-## Future Agents Roadmap
-
-### Phase 1: Core Domain Experts
-- ✅ typescript-expert - TypeScript/JavaScript
-- ⏳ react-expert - React patterns and hooks
-- ⏳ nodejs-expert - Node.js server patterns
-- ⏳ testing-expert - Testing strategies
-
-### Phase 2: Specialized Experts
-- typescript-type-expert - Advanced type system
-- react-performance-expert - React optimization
-- database-postgres-expert - PostgreSQL
-- docker-expert - Containerization
-
-See the main specification for the complete roadmap.
+See the [Creating Subagents Guide](../../docs/internals/creating-subagents.md) for detailed instructions.

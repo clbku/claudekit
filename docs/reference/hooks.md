@@ -26,11 +26,11 @@ Claudekit uses clear suffixes to indicate hook scope:
 The `claudekit-hooks` command is automatically installed when you install claudekit:
 
 ```bash
-npm install -g claudekit
+npm install -g claudekit-dev
 # or
-yarn global add claudekit
+yarn global add claudekit-dev
 # or
-pnpm add -g claudekit
+pnpm add -g claudekit-dev
 ```
 
 ### Basic Usage
@@ -375,6 +375,22 @@ To disable the thinking-level hook, set the level to 0:
 ### PreToolUse Hooks
 
 These hooks run before file access operations:
+
+#### sfw-install
+
+**Purpose:** Warns when installing packages without [Socket Firewall (sfw)](https://github.com/SocketDev/sfw-free) security scanning.
+
+**Triggers on:** Bash tool (package install commands)
+
+**Features:**
+- Detects 9 package managers across 6 ecosystems (npm, yarn, pnpm, bun, pip, uv, cargo, go, gem, composer)
+- Recommends wrapping commands with `sfw` for real-time malicious package blocking
+- Skips help/version flags to avoid false positives
+- Provides installation instructions when sfw is not available
+
+**Exit Codes:**
+- 0: No package install detected or sfw installed
+- 2: Warning issued (installing without sfw)
 
 #### file-guard
 

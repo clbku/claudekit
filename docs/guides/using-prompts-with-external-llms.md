@@ -14,7 +14,7 @@ Claudekit's `show` command extracts specialized AI assistant prompts for use wit
 
 ```bash
 # Install claudekit (if not already installed)
-npm install -g claudekit && claudekit setup --yes --force --agents typescript-expert,react-expert,postgres-expert
+npm install -g claudekit-dev && claudekit setup --yes --force --agents typescript-expert,react-expert,postgres-expert
 ```
 
 ## Key Use Case: Claude Code Non-Interactive Mode
@@ -87,7 +87,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Install tools
       run: |
-        npm install -g claudekit
+        npm install -g claudekit-dev
         # Install Claude Code CLI per official docs
     
     - name: AI Code Review

@@ -12,7 +12,7 @@ This ensures AI assistants understand your project structure, code relationships
 
 ```bash
 # Install claudekit and codebase-map tool (if not already installed)
-npm install -g claudekit codebase-map
+npm install -g claudekit-dev codebase-map
 
 # Add both codebase map hooks to your project  
 claudekit setup --yes --force --hooks codebase-map,codebase-map-update
@@ -124,7 +124,7 @@ The `codebase-map` hook supports two trigger events with different tradeoffs:
 ### Basic Usage
 ```bash
 # Install and setup (one-time)
-npm install -g claudekit codebase-map && claudekit setup --yes --force --hooks codebase-map,codebase-map-update
+npm install -g claudekit-dev codebase-map && claudekit setup --yes --force --hooks codebase-map,codebase-map-update
 
 # Start Claude Code session
 # → Codebase map automatically provided as context

@@ -7,7 +7,7 @@ The check-comment-replacement hook detects a common anti-pattern where AI assist
 ## Installation
 
 ```bash
-npm install -g claudekit && claudekit setup --yes --force --hooks check-comment-replacement
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks check-comment-replacement
 ```
 
 This configures the hook to run on PostToolUse events for Edit and MultiEdit operations in `.claude/settings.json`.

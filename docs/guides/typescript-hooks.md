@@ -7,7 +7,7 @@ The TypeScript hooks provide comprehensive type checking through two complementa
 ## Installation
 
 ```bash
-npm install -g claudekit && claudekit setup --yes --force --hooks typecheck-changed,typecheck-project
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks typecheck-changed,typecheck-project
 ```
 
 This configures both hooks in `.claude/settings.json`:

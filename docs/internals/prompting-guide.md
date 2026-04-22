@@ -324,7 +324,7 @@ This guide focuses on prompt writing patterns. For complete schema specification
 ```bash
 # Validate schemas and configurations
 claudekit lint-commands      # Command frontmatter validation
-claudekit lint-subagents     # Subagent frontmatter validation
+claudekit lint-agents        # Agent frontmatter validation
 claudekit doctor             # Overall project setup
 ```
 
@@ -445,7 +445,7 @@ color: cyan
 ```bash
 # 1. Lint frontmatter schemas
 claudekit lint-commands
-claudekit lint-subagents
+claudekit lint-agents
 
 # 2. Check project setup
 claudekit doctor

@@ -10,7 +10,7 @@
 1. Check `.claude/settings.json` exists and has correct hook configuration
 2. Verify hooks are using the embedded format: `claudekit-hooks run <hook-name>`
 3. Run `claudekit doctor` to check configuration syntax
-4. Ensure claudekit is installed globally: `npm list -g claudekit`
+4. Ensure claudekit is installed globally: `npm list -g claudekit-dev`
 
 ### TypeScript/ESLint Not Found
 
@@ -103,7 +103,7 @@
 
 **Solutions**:
 1. This is usually a duplicate detection issue
-2. Update to latest claudekit version: `npm update -g claudekit`
+2. Update to latest claudekit version: `npm update -g claudekit-dev`
 3. Check transcript permissions: Claude Code needs access to its transcript
 
 ### Permission Errors
@@ -140,7 +140,7 @@ If you encounter issues not covered here:
 2. Check debug output: `DEBUG=true claudekit-hooks run <hook-name>`
 3. Search [existing issues](https://github.com/carlrannaberg/claudekit/issues)
 4. Open a new issue with:
-   - Your claudekit version: `claudekit --version`
+   - Your claudekit version: `claudekit doctor`
    - Node.js version: `node --version`
    - Error messages and debug output
    - Relevant configuration files

@@ -1,6 +1,6 @@
 # Subagents List
 
-Claudekit includes 32 specialized AI subagents that provide deep domain expertise. These agents work alongside Claude Code to handle complex, domain-specific tasks.
+Claudekit includes 35 specialized AI subagents that provide deep domain expertise. These agents work alongside Claude Code to handle complex, domain-specific tasks.
 
 ## Installation
 
@@ -27,10 +27,22 @@ After installation, use agents in two ways:
 ### 🧠 Advanced Analysis
 
 #### oracle
-Deep debugging, audits, and architectural decisions using GPT-5.
+Deep debugging, audits, and architectural decisions.
 - **Expertise**: Complex bug analysis, security audits, code reviews
-- **Special**: Uses external CLI tools (cursor-agent, codex, opencode)
+- **Special**: Uses external CLI tools for second opinions
 - **Setup**: [Oracle Setup Guide](../integrations/oracle.md)
+
+#### code-search
+Specialized codebase search for finding specific implementations and patterns.
+- **Expertise**: Fast, parallel codebase searches with 3-10x speed improvements
+
+#### research-expert
+Comprehensive parallel research with structured reporting.
+- **Expertise**: 90% time reduction via parallel agents, automatic citation management
+
+#### triage-expert
+Context gathering and initial problem diagnosis specialist.
+- **Expertise**: Error analysis, performance issues, problem routing to specialized experts
 
 ### 🔧 Build Tools
 
@@ -47,10 +59,6 @@ Vite development and build optimization expert.
 #### code-review-expert
 Comprehensive 6-aspect parallel code review specialist.
 - **Expertise**: Architecture, security, performance, testing, quality, documentation
-
-#### triage-expert
-Context gathering and initial problem diagnosis specialist.
-- **Expertise**: Error analysis, performance issues, problem routing to specialized experts
 
 #### refactoring-expert
 Code smell detection and comprehensive refactoring guidance.
@@ -107,6 +115,26 @@ WCAG compliance and accessibility optimization.
 #### nextjs-expert (framework/nextjs-expert)
 Next.js App Router and Server Components specialist.
 - **Expertise**: App Router, Server Components, performance, deployment
+
+#### nestjs-expert
+Nest.js framework expert.
+- **Expertise**: Module architecture, dependency injection, middleware, TypeORM/Mongoose
+
+#### loopback-expert
+LoopBack 4 framework specialist.
+- **Expertise**: Dependency injection, repository patterns, authentication, database integration
+
+#### ai-sdk-expert
+Vercel AI SDK v5 specialist.
+- **Expertise**: Streaming, model integration, tool calling, edge runtime
+
+#### kafka-expert
+Apache Kafka distributed streaming expert.
+- **Expertise**: Consumer/producer management, topic management, performance tuning
+
+#### cli-expert
+CLI tool development specialist.
+- **Expertise**: npm package CLIs, argument parsing, interactive modes
 
 ### 🌿 Version Control
 

@@ -14,7 +14,7 @@ Claudekit's checkpoint system provides automatic and manual save points during A
 
 ```bash
 # Install claudekit (if not already installed)
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # Add checkpoint system to your project
 claudekit setup --yes --force --hooks create-checkpoint --commands checkpoint:create,checkpoint:restore,checkpoint:list

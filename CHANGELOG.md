@@ -5,25 +5,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.10] - 2026-04-22
 
 ### Added
 - **`claudekit upgrade` command**: Check for newer versions and upgrade from npm
-  - Compares current version against npm registry
-  - Auto-detects package manager (npm/yarn/pnpm) for global install
-  - Supports `--check` flag for update-only checking
+  - Compares current version against npm registry using semantic version comparison
+  - Auto-detects package manager (npm/yarn/pnpm) for global install commands
+  - Supports `--check` flag for update-only checking without installation
+  - Provides clear upgrade instructions when newer version is available
+  - Handles version parsing with fallback support for various version formats
 - **`claudekit sync` command**: Sync installed project components to match current version
   - Updates changed components and removes deprecated ones (does not add new — use `setup` or `add`)
-  - Handles symlink-based installations correctly
-  - Safe removal — only deletes files with YAML frontmatter
-  - Supports `--dry-run` and `--project <path>` flags
+  - Handles symlink-based installations correctly with proper symlink detection
+  - Safe removal — only deletes files with YAML frontmatter to avoid accidental deletion
+  - Supports `--dry-run` flag for previewing changes without modifying files
+  - Supports `--project <path>` flag for syncing projects outside current directory
+  - Scans both regular files and symlinks in `.claude/commands/` and `.claude/agents/` directories
+- **OWASP Security Scanning Tools**: Comprehensive security analysis capabilities
+  - **`security-expert` subagent**: New specialized agent for OWASP Top 10 security audits
+    - Covers injection, auth bypass, XSS, CSRF, SSRF, crypto flaws, and dependency vulnerabilities
+    - Provides concrete findings with exploit scenarios and remediation guidance
+    - Includes security analysis framework for all 10 OWASP categories
+    - Proactively use for security audits, code review, and penetration testing analysis
+  - **`security-scan` hook**: PostToolUse hook that scans changed files for security anti-patterns
+    - Detects hardcoded secrets, API keys, and passwords
+    - Identifies command injection vectors in shell commands and code
+    - Finds weak cryptographic usage (MD5, SHA1, random number generation)
+    - Detects path traversal patterns and insecure deserialization
+    - Catches SQL injection patterns and template injection vulnerabilities
+    - Provides structured findings with severity levels (critical/high/medium)
+  - **`/security-review` command**: Comprehensive security audit workflow
+    - Integrates dependency audit with `npm audit` and `npm outdated`
+    - Supports flexible scoping (full codebase, recent changes, specific files, dependencies only)
+    - Launches `security-expert` agent for deep analysis
+    - Provides structured security reports with vulnerability categorization
 
 ### Fixed
 - **Codebase Map CLI Resolution**: Fixed hooks failing to resolve `codebase-map` when not globally installed
   - Auto-detects package manager (npm/yarn/pnpm) and resolves CLI accordingly (npx/yarn dlx/pnpm dlx)
   - Refactored `generateCodebaseMap()` and `updateCodebaseMap()` to use `detectPackageManager()`
   - Eliminated need for global `codebase-map` installation — works as local dependency
-  - Added smoke tests for CLI integration without mocks
+  - Added smoke tests for CLI integration without mocks to ensure reliability
+
+### Security
+- **File Guard Negation Pattern Filtering**: Fixed security bypass vulnerability in negation pattern handling
+  - Filter negation patterns (starting with `!`) from globToRegExp conversion
+  - Prevents false positives where negation patterns could be circumvented
+  - Enhanced pattern matching security in file-guard and create-checkpoint hooks
+
+### Reliability
+- **Audit Resolutions**: Resolved 34 audit findings across security and reliability
+  - Fixed 9 P0 (Priority 0) security issues
+  - Fixed 25 P1 (Priority 1) reliability issues
+  - Improved overall code quality and dependency security
+
+### Documentation
+- **Codebase Map Package Manager Documentation**: Updated documentation to reflect auto-resolution capabilities
+  - Documented package manager auto-detection feature
+  - Updated examples to show npx/yarn dlx/pnpm dlx usage
+  - Clarified that global installation is no longer required
+
+### Changed
+- **GitHub Actions Workflows**: Updated CI/CD workflows to use Node.js 24
+  - Updated from Node.js 20 to Node.js 24 in all workflow files
+  - Improved workflow formatting and structure
+  - Enhanced build and test processes with latest Node.js features
 
 ## [0.9.9] - 2026-04-21
 

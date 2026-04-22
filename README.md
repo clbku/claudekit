@@ -11,7 +11,7 @@
 
 ## Requirements
 
-Claude Code **Max plan** (recommended) · Node.js 20+
+Claude Code **Max plan** (recommended) · Node.js 20+ (tested on Node.js 24)
 
 ## Install
 
@@ -42,6 +42,7 @@ Hooks run automatically as Claude works, catching issues before they compound:
 - **TypeScript guard** — blocks `any` types and type errors on edit
 - **Linting** — catches style issues immediately
 - **Test runner** — runs relevant tests on file changes
+- **Security scanning** — detects OWASP Top 10 vulnerabilities (hardcoded secrets, injection, weak crypto)
 - **Anti-patterns** — prevents code replacement with comments, lazy refactoring
 - **Sensitive file protection** — 195+ patterns across 12 categories (`.env`, SSH keys, cloud credentials)
 - **Package install guard** — warns when installing packages without security scanning
@@ -87,6 +88,7 @@ Claude sees your entire project structure automatically — no trial-and-error s
 | Category | Agents |
 |---|---|
 | **Code Review** | `code-review-expert`, `triage-expert` |
+| **Security** | `security-expert` |
 | **TypeScript** | `typescript-expert`, `typescript-build-expert`, `typescript-type-expert` |
 | **React & Frontend** | `react-expert`, `react-performance-expert`, `nextjs-expert`, `css-styling-expert` |
 | **Testing** | `testing-expert`, `vitest-testing-expert`, `jest-testing-expert`, `playwright-expert` |
@@ -114,8 +116,9 @@ claudekit setup --agents typescript-expert,react-expert  # install specific agen
 /git:checkout [branch]      Smart branch creation/switching
 /git:ignore-init            Initialize AI-safe .gitignore patterns
 
-# Code Quality
+# Code Quality & Security
 /code-review [target]       Multi-agent code review
+/security-review [scope]    OWASP Top 10 security audit
 /validate-and-fix           Run all quality checks and fix issues
 
 # Development
@@ -141,6 +144,8 @@ claudekit doctor             # Check installation health
 claudekit upgrade            # Upgrade to latest version from npm
 claudekit upgrade --check    # Check for updates without installing
 claudekit sync               # Sync project components to current version
+claudekit sync --dry-run     # Preview sync changes without modifying files
+claudekit sync --project <path>  # Sync a specific project directory
 
 # Extract prompts for external LLMs
 claudekit show agent <id>    # Display agent prompt
@@ -163,6 +168,7 @@ Hooks automatically enforce quality as Claude works:
 |---|---|---|
 | `file-guard` | PreToolUse | Block access to sensitive files |
 | `sfw-install` | PreToolUse | Warn on unsecured package installs |
+| `security-scan` | PostToolUse | Scan for security anti-patterns |
 | `typecheck-changed` | PostToolUse | TypeScript checking on file changes |
 | `lint-changed` | PostToolUse | Linting on changed files |
 | `test-changed` | PostToolUse | Run tests for changed files |

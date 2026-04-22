@@ -19,6 +19,7 @@ export { SelfReviewHook } from './self-review.js';
 export { CodebaseMapHook, CodebaseMapUpdateHook } from './codebase-map.js';
 export { FileGuardHook } from './file-guard/index.js';
 export { SfwInstallHook } from './sfw-install.js';
+export { SecurityScanHook } from './security-scan.js';
 
 // Export base and utils
 export { BaseHook } from './base.js';

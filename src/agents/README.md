@@ -30,6 +30,7 @@ src/agents/
 ├── devops/                            # DevOps & infrastructure
 ├── git/                               # Git workflow
 ├── code-quality/                      # Linting & formatting
+├── security/                          # OWASP, vulnerability analysis
 └── documentation/                     # Documentation expert
 ```
 

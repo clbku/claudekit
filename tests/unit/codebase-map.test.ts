@@ -48,6 +48,13 @@ vi.mock('node:fs/promises', () => ({
 vi.mock('../../cli/hooks/utils.js', () => ({
   checkToolAvailable: vi.fn(),
   execCommand: vi.fn(),
+  detectPackageManager: vi.fn().mockResolvedValue({
+    name: 'npm',
+    exec: 'npx',
+    execArgs: [],
+    run: 'npm run',
+    test: 'npm test',
+  }),
   formatError: vi.fn(
     (title: string, details: string, instructions: string[]) =>
       `${title}: ${details}\n${instructions.join('\n')}`
@@ -64,7 +71,7 @@ vi.mock('node:os', () => ({
 
 // Import after mocking
 import { CodebaseMapHook, CodebaseMapUpdateHook } from '../../cli/hooks/codebase-map.js';
-import { checkToolAvailable, execCommand } from '../../cli/hooks/utils.js';
+import { checkToolAvailable, detectPackageManager, execCommand } from '../../cli/hooks/utils.js';
 import { getHookConfig } from '../../cli/utils/claudekit-config.js';
 
 // Helper functions for test setup
@@ -201,7 +208,7 @@ describe('CodebaseMapHook', () => {
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['format', '--format', 'markdown'], expect.objectContaining({
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'format', '--format', 'markdown'], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
       }));
     });
@@ -262,7 +269,7 @@ describe('CodebaseMapHook', () => {
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['format', '--format', 'invalid-format'], expect.objectContaining({
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'format', '--format', 'invalid-format'], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
       }));
     });
@@ -281,8 +288,8 @@ describe('CodebaseMapHook', () => {
 
       expect(result.exitCode).toBe(0);
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['format', '--format', 'auto', '--include', 'src/**', '--include', 'lib/**', '--exclude', '**/*.test.ts', '--exclude', '**/*.spec.ts'],
+        'npx',
+        ['codebase-map', 'format', '--format', 'auto', '--include', 'src/**', '--include', 'lib/**', '--exclude', '**/*.test.ts', '--exclude', '**/*.spec.ts'],
         expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
         })
@@ -329,10 +336,10 @@ describe('CodebaseMapHook', () => {
       const result = await hook.execute(mockContext);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'scan'], expect.any(Object));
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
+        'npx',
+        ['codebase-map', 'format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
     });
@@ -449,6 +456,13 @@ describe('CodebaseMapUpdateHook', () => {
     // Default mock return values - set these AFTER clearing
     mockCheckToolAvailable.mockResolvedValue(true);
     mockGetHookConfig.mockReturnValue({}); // Ensure clean config
+    (detectPackageManager as Mock).mockResolvedValue({
+      name: 'npm',
+      exec: 'npx',
+      execArgs: [],
+      run: 'npm run',
+      test: 'npm test',
+    });
   });
 
   describe('shouldUpdateMap', () => {
@@ -614,8 +628,8 @@ describe('CodebaseMapUpdateHook', () => {
       );
       expect(mockFsAccess).toHaveBeenCalledWith('/test/project/.codebasemap');
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['update', '/test/project/src/index.ts'],
+        'npx',
+        ['codebase-map', 'update', '/test/project/src/index.ts'],
         expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
         })
@@ -623,10 +637,8 @@ describe('CodebaseMapUpdateHook', () => {
     });
 
     it('should handle update errors silently', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       mockCheckToolAvailable.mockResolvedValueOnce(true);
-      // Simulate execCommand rejection
+      // Simulate execCommand rejection — updateCodebaseMap catches internally
       mockExecCommand.mockRejectedValueOnce(new Error('Update failed'));
       mockFsAccess.mockResolvedValueOnce(undefined);
 
@@ -639,12 +651,6 @@ describe('CodebaseMapUpdateHook', () => {
         TEST_PROJECT_ROOT
       );
       expect(mockFsAccess).toHaveBeenCalledWith('/test/project/.codebasemap');
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to update codebase map:',
-        expect.any(Error)
-      );
-
-      consoleErrorSpy.mockRestore();
     });
 
     // Additional edge case tests for execute method
@@ -693,8 +699,8 @@ describe('CodebaseMapUpdateHook', () => {
 
       expect(result.exitCode).toBe(0);
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['update', '/test/project/src/index.ts'],
+        'npx',
+        ['codebase-map', 'update', '/test/project/src/index.ts'],
         expect.objectContaining({
           cwd: TEST_PROJECT_ROOT,
         })
@@ -726,7 +732,7 @@ describe('CodebaseMapUpdateHook', () => {
       const result = await hook.execute(contextWithLongPath);
 
       expect(result.exitCode).toBe(0);
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['update', longPath], expect.objectContaining({
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'update', longPath], expect.objectContaining({
         cwd: TEST_PROJECT_ROOT,
       }));
     });

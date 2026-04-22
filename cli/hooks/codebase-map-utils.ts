@@ -3,7 +3,7 @@
  * Used by both codebase-map and codebase-context hooks
  */
 
-import { checkToolAvailable, execCommand } from './utils.js';
+import { checkToolAvailable, detectPackageManager, execCommand } from './utils.js';
 
 export interface CodebaseMapConfig {
   include?: string[];
@@ -39,13 +39,18 @@ export async function generateCodebaseMap(options: CodebaseMapOptions): Promise<
   }
 
   try {
+    // Detect package manager to resolve the command properly
+    const pm = await detectPackageManager(options.projectRoot);
+    const cmd = pm.exec;
+    const scanArgs = [...pm.execArgs, 'codebase-map', 'scan'];
+
     // First, scan the project to create/update the index (scan everything for comprehensive index)
-    await execCommand('codebase-map', ['scan'], {
+    await execCommand(cmd, scanArgs, {
       cwd: options.projectRoot,
     });
 
-    // Then format and get the result with filtering — build args array to avoid shell injection
-    const formatArgs: string[] = ['format', '--format', options.format ?? 'auto'];
+    // Then format and get the result with filtering
+    const formatArgs: string[] = [...pm.execArgs, 'codebase-map', 'format', '--format', options.format ?? 'auto'];
 
     // Add include patterns if specified
     if (options.include && options.include.length > 0) {
@@ -61,12 +66,7 @@ export async function generateCodebaseMap(options: CodebaseMapOptions): Promise<
       }
     }
 
-    // Debug output to show exact command being run
-    if (process.env['DEBUG'] === 'true') {
-      console.error('Running codebase-map command:', 'codebase-map', formatArgs.join(' '));
-    }
-
-    const result = await execCommand('codebase-map', formatArgs, {
+    const result = await execCommand(cmd, formatArgs, {
       cwd: options.projectRoot,
     });
 
@@ -91,7 +91,8 @@ export async function updateCodebaseMap(
   }
 
   try {
-    await execCommand('codebase-map', ['update', filePath], {
+    const pm = await detectPackageManager(projectRoot);
+    await execCommand(pm.exec, [...pm.execArgs, 'codebase-map', 'update', filePath], {
       cwd: projectRoot,
     });
     return true;

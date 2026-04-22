@@ -135,8 +135,12 @@ claudekit setup --agents typescript-expert,react-expert  # install specific agen
 # Setup & info
 claudekit setup              # Interactive setup wizard
 claudekit list               # Show all components
-claudekit list agents        # List available agents
 claudekit doctor             # Check installation health
+
+# Upgrade & sync
+claudekit upgrade            # Upgrade to latest version from npm
+claudekit upgrade --check    # Check for updates without installing
+claudekit sync               # Sync project components to current version
 
 # Extract prompts for external LLMs
 claudekit show agent <id>    # Display agent prompt

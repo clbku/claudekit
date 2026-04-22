@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`claudekit upgrade` command**: Check for newer versions and upgrade from npm
+  - Compares current version against npm registry
+  - Auto-detects package manager (npm/yarn/pnpm) for global install
+  - Supports `--check` flag for update-only checking
+- **`claudekit sync` command**: Sync installed project components to match current version
+  - Updates changed components and removes deprecated ones (does not add new — use `setup` or `add`)
+  - Handles symlink-based installations correctly
+  - Safe removal — only deletes files with YAML frontmatter
+  - Supports `--dry-run` and `--project <path>` flags
+
 ### Fixed
 - **Codebase Map CLI Resolution**: Fixed hooks failing to resolve `codebase-map` when not globally installed
   - Auto-detects package manager (npm/yarn/pnpm) and resolves CLI accordingly (npx/yarn dlx/pnpm dlx)

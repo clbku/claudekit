@@ -269,13 +269,13 @@ These hooks run when users submit their first prompt in a Claude Code session:
 
 **Triggers on:** SessionStart or UserPromptSubmit event (first prompt only)
 
-**Dependencies:** Requires [codebase-map](https://github.com/carlrannaberg/codebase-map) CLI tool installed
+**Dependencies:** Requires [codebase-map](https://github.com/carlrannaberg/codebase-map) CLI tool — auto-resolved via your package manager (npx/yarn dlx/pnpm dlx)
 
 > 💡 **Comprehensive Guide Available**: For detailed setup, configuration options, troubleshooting, and best practices, see the [Codebase Map Hooks Guide](../guides/codebase-map.md).
 
 **Configuration Options:**
 - `format` (string): Output format - auto|json|dsl|graph|markdown (default: "auto")
-- `command` (string): Custom command to run (default: "codebase-map scan")
+- `command` (string): Custom scan command (default: resolved via package manager, e.g., `npx codebase-map scan`)
 
 **Features:**
 - Runs only once per Claude Code session (prevents duplicate context)
@@ -288,6 +288,8 @@ These hooks run when users submit their first prompt in a Claude Code session:
 
 **Installation:**
 ```bash
+# Auto-resolved via package manager — no manual install needed for hooks
+# Optionally install globally for manual CLI usage:
 npm install -g codebase-map
 ```
 
@@ -358,13 +360,13 @@ To disable the thinking-level hook, set the level to 0:
 
 **Triggers on:** Write, Edit, MultiEdit tools (TypeScript/JavaScript files only)
 
-**Dependencies:** Requires codebase-map CLI tool installed
+**Dependencies:** Requires codebase-map CLI tool — auto-resolved via your package manager
 
 > 💡 **Used with codebase-map hook**: This update hook works in conjunction with the `codebase-map` hook. See the [Codebase Map Hooks Guide](../guides/codebase-map.md) for the complete two-hook system setup.
 
 **Configuration Options:**
 - `updateOnChanges` (boolean): Enable/disable automatic updates (default: true)
-- `command` (string): Custom update command (default: "codebase-map update [file]")
+- `command` (string): Custom update command (default: resolved via package manager, e.g., `npx codebase-map update [file]`)
 
 **Features:**
 - Incremental updates without full re-scan

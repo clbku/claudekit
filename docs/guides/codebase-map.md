@@ -11,16 +11,22 @@ This ensures AI assistants understand your project structure, code relationships
 ## Installation
 
 ```bash
-# Install claudekit and codebase-map tool (if not already installed)
-npm install -g claudekit-dev codebase-map
+# Install claudekit (codebase-map is resolved automatically via your package manager)
+npm install -g claudekit-dev
 
-# Add both codebase map hooks to your project  
+# Add both codebase map hooks to your project
 claudekit setup --yes --force --hooks codebase-map,codebase-map-update
 ```
 
+The hooks auto-detect your package manager and resolve `codebase-map` accordingly:
+- **npm** → `npx codebase-map`
+- **yarn** → `yarn dlx codebase-map`
+- **pnpm** → `pnpm dlx codebase-map`
+
+> **Global install optional**: You can still install `codebase-map` globally (`npm install -g codebase-map`) for manual CLI usage, but the hooks resolve it automatically via your project's package manager.
+
 This will:
-- Install the `codebase-map` CLI tool globally
-- Add `codebase-map` hook for session context (UserFeedback event - limits to 9,000 chars)
+- Add `codebase-map` hook for session context (UserPromptSubmit or SessionStart event)
 - Add `codebase-map-update` hook for live updates (PostToolUse event)
 - Create default configuration in `.claudekit/config.json`
 
@@ -123,8 +129,8 @@ The `codebase-map` hook supports two trigger events with different tradeoffs:
 
 ### Basic Usage
 ```bash
-# Install and setup (one-time)
-npm install -g claudekit-dev codebase-map && claudekit setup --yes --force --hooks codebase-map,codebase-map-update
+# Setup (one-time) — codebase-map is auto-resolved via package manager
+claudekit setup --yes --force --hooks codebase-map,codebase-map-update
 
 # Start Claude Code session
 # → Codebase map automatically provided as context
@@ -297,9 +303,20 @@ claudekit list hooks | grep codebase-map
 ```
 
 ### codebase-map Command Not Found
-Install the CLI tool:
+The hooks auto-resolve `codebase-map` via your package manager. If resolution fails:
 ```bash
+# Option 1: Install as a project dependency
+npm install --save-dev codebase-map
+
+# Option 2: Install globally (for manual CLI usage)
 npm install -g codebase-map
+```
+
+Check that the tool is resolvable:
+```bash
+npx codebase-map --version   # npm
+pnpm dlx codebase-map --version  # pnpm
+yarn dlx codebase-map --version  # yarn
 ```
 
 ### Context Truncated

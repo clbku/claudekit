@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Codebase Map CLI Resolution**: Fixed hooks failing to resolve `codebase-map` when not globally installed
+  - Auto-detects package manager (npm/yarn/pnpm) and resolves CLI accordingly (npx/yarn dlx/pnpm dlx)
+  - Refactored `generateCodebaseMap()` and `updateCodebaseMap()` to use `detectPackageManager()`
+  - Eliminated need for global `codebase-map` installation — works as local dependency
+  - Added smoke tests for CLI integration without mocks
+
 ## [0.9.9] - 2026-04-21
 
 ### Security

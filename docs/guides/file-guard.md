@@ -14,7 +14,7 @@ The file-guard hook automatically prevents AI assistants from accessing sensitiv
 
 ```bash
 # Install claudekit (if not already installed)
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # Add file-guard hook to your project
 claudekit setup --yes --force --hooks file-guard

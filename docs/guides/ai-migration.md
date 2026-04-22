@@ -6,10 +6,10 @@ The `/agents-md:migration` command helps you migrate to the [AGENTS.md standard]
 
 ```bash
 # Install claudekit globally
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # Initialize commands in your project
-claudekit setup --yes --force --commands agents-md
+claudekit setup --yes --force --commands agents-md:migration
 ```
 
 ## Supported AI Assistants

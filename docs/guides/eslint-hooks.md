@@ -7,7 +7,7 @@ The ESLint hooks provide comprehensive code quality validation through two compl
 ## Installation
 
 ```bash
-npm install -g claudekit && claudekit setup --yes --force --hooks lint-changed,lint-project
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks lint-changed,lint-project
 ```
 
 This configures both hooks in `.claude/settings.json`:

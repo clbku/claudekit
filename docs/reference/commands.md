@@ -40,12 +40,23 @@ Intelligent git status analysis.
 - Provides actionable insights
 - Suggests next steps
 
+### `/git:checkout [branch]`
+Smart branch creation and switching with conventional naming.
+- Creates branches with conventional prefixes (feat/, fix/, etc.)
+- Detects branch type from arguments
+- Example: `/git:checkout fix/login-bug`
+
 ### `/git:push`
 Safe push with pre-flight checks.
 - Verifies branch tracking
 - Checks for uncommitted changes
 - Runs tests if configured
 - Pushes to remote safely
+
+### `/git:ignore-init`
+Initialize AI-safe .gitignore patterns.
+- Adds patterns for sensitive file protection
+- Configures .agentignore for AI tools
 
 ## Development Tools
 
@@ -187,19 +198,36 @@ Configure bash command timeout.
 - Scope: "user" or "project" (default: user)
 - Example: `/config:bash-timeout 20min project`
 
-## Advanced Commands
+## Code Review & Research
 
-### `/generate-checkpoints-report`
-Analyze checkpoint usage patterns.
-- Shows checkpoint frequency
-- Identifies restoration patterns
-- Suggests workflow improvements
+### `/code-review [target]`
+Multi-aspect code review with 6 parallel agents.
+- Architecture, security, performance, testing, quality, documentation
+- Smart targeting based on file types
+- Structured reports with prioritized issues
 
-### `/analyze-hooks-performance`
-Profile hook execution times.
-- Identifies slow hooks
-- Shows execution frequency
-- Suggests optimizations
+### `/research [query]`
+Deep parallel research with specialized subagents.
+- Launches 5-10 research agents simultaneously
+- Automatic query classification
+- Structured reports with citations
+
+## Session Hook Control
+
+### `/hook:disable [hook-name]`
+Temporarily disable a hook for the current session.
+- Fuzzy matching for hook names
+- Session-isolated (no config changes)
+- Example: `/hook:disable typecheck-changed`
+
+### `/hook:enable [hook-name]`
+Re-enable a previously disabled hook.
+- Example: `/hook:enable typecheck`
+
+### `/hook:status [hook-name]`
+Show hook status (enabled/disabled/not-configured).
+- Visual indicators
+- Example: `/hook:status lint`
 
 ## Agent Commands Comparison
 

@@ -9,7 +9,7 @@ The check-any-changed hook detects and prevents the use of TypeScript's `any` ty
 ## Installation
 
 ```bash
-npm install -g claudekit && claudekit setup --yes --force --hooks check-any-changed
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks check-any-changed
 ```
 
 This configures the hook to run on PostToolUse events for Write, Edit, and MultiEdit operations in `.claude/settings.json`.

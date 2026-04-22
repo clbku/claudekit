@@ -318,11 +318,11 @@ Claudekit validates subagent frontmatter using the official Claude Code schema p
 
 **Run Validation:**
 ```bash
-# Lint all subagents in .claude/agents
-claudekit lint-subagents
+# Lint all agents in .claude/agents
+claudekit lint-agents
 
-# Lint subagents in a specific directory
-claudekit lint-subagents path/to/agents
+# Lint agents in a specific directory
+claudekit lint-agents path/to/agents
 
 # Check overall project setup (counts agents, not schemas)
 claudekit doctor

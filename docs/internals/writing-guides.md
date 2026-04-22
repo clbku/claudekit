@@ -116,7 +116,7 @@ All feature guides must include both commands because:
 **Good:**
 ```bash
 # Single command that handles both requirements
-npm install -g claudekit && claudekit setup --yes --force --hooks feature
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks feature
 ```
 
 **Bad:**
@@ -128,7 +128,7 @@ claudekit setup --yes --force --hooks feature
 cp $(npm root -g)/claudekit/src/new-feature.md .claude/
 
 # Requires multiple copy-paste operations
-npm install -g claudekit
+npm install -g claudekit-dev
 claudekit setup --yes --force --hooks feature
 ```
 
@@ -141,7 +141,7 @@ claudekit setup --yes --force --hooks feature
 **Always include both steps in one command:**
 ```bash
 # Template for all feature installation instructions
-npm install -g claudekit && claudekit setup --yes --force --hooks FEATURE_NAME
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks FEATURE_NAME
 ```
 
 **Troubleshooting commands should also be consistent:**

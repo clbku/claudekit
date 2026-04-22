@@ -1,8 +1,8 @@
 import type { HookContext, HookResult } from './base.js';
 import { BaseHook } from './base.js';
-import { checkToolAvailable, execCommand } from './utils.js';
+import { checkToolAvailable } from './utils.js';
 import { getHookConfig } from '../utils/claudekit-config.js';
-import { generateCodebaseMap, type CodebaseMapConfig } from './codebase-map-utils.js';
+import { generateCodebaseMap, updateCodebaseMap, type CodebaseMapConfig } from './codebase-map-utils.js';
 import { SessionTracker } from './session-utils.js';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
@@ -90,7 +90,7 @@ export class CodebaseMapHook extends BaseHook {
       }
 
       // Only provide context if we have output
-      if (result.output !== undefined && result.output !== '') {
+      if (result.output !== null && result.output !== undefined && result.output.length > 0) {
         // Mark that we've provided context for this session
         await this.markContextProvided(context);
 
@@ -194,9 +194,7 @@ export class CodebaseMapUpdateHook extends BaseHook {
 
     try {
       // Update the specific file in the index (no filtering needed for updates)
-      await execCommand('codebase-map', ['update', filePath as string], {
-        cwd: projectRoot,
-      });
+      await updateCodebaseMap(filePath as string, projectRoot);
 
       // Silent success - don't interrupt workflow
     } catch (error) {

@@ -84,6 +84,13 @@ describe('Codebase Hooks Integration', () => {
     mockFsWriteFile.mockResolvedValue(undefined);
     mockExecCommand.mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
     mockFsReaddir.mockResolvedValue([]);
+    vi.mocked(utils.detectPackageManager).mockResolvedValue({
+      name: 'npm',
+      exec: 'npx',
+      execArgs: [],
+      run: 'npm run',
+      test: 'npm test',
+    });
   });
 
   afterEach(() => {
@@ -213,10 +220,10 @@ describe('Codebase Hooks Integration', () => {
       await mapHook.execute(createSessionStartContext('33333333-3333-3333-3333-333333333333'));
 
       // Check that filtering was applied via execCommand args
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'scan'], expect.any(Object));
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
+        'npx',
+        ['codebase-map', 'format', '--format', 'json', '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
 
@@ -230,10 +237,10 @@ describe('Codebase Hooks Integration', () => {
       await contextHook.execute(createUserPromptContext('44444444-4444-4444-4444-444444444444'));
 
       // Should use same filtering configuration
-      expect(mockExecCommand).toHaveBeenCalledWith('codebase-map', ['scan'], expect.any(Object));
+      expect(mockExecCommand).toHaveBeenCalledWith('npx', ['codebase-map', 'scan'], expect.any(Object));
       expect(mockExecCommand).toHaveBeenCalledWith(
-        'codebase-map',
-        ['format', '--format', customConfig.format, '--include', 'src/**', '--exclude', '**/*.test.ts'],
+        'npx',
+        ['codebase-map', 'format', '--format', customConfig.format, '--include', 'src/**', '--exclude', '**/*.test.ts'],
         expect.any(Object)
       );
     });

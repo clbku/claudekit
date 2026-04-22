@@ -15,7 +15,7 @@ Claudekit's git workflow commands provide safe, convention-aware version control
 
 ```bash
 # Install claudekit (if not already installed)
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # Add git workflow commands to your project
 claudekit setup --yes --force --commands git:commit,git:status,git:push,gh:repo-init

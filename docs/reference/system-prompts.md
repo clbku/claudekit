@@ -1,5 +1,7 @@
 # Claude Code System Prompts
 
+> **Warning**: This is a historical snapshot of Claude Code system prompts from version 1.0.84. Content may be outdated — refer to the [official Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) for current information.
+
 **Claude Code Version**: 1.0.84
 
 ## Table of Contents

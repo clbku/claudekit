@@ -7,7 +7,7 @@ The test hooks provide comprehensive test validation through two complementary h
 ## Installation
 
 ```bash
-npm install -g claudekit && claudekit setup --yes --force --hooks test-changed,test-project
+npm install -g claudekit-dev && claudekit setup --yes --force --hooks test-changed,test-project
 ```
 
 This configures both hooks in `.claude/settings.json`:

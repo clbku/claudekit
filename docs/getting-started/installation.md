@@ -5,13 +5,13 @@ Get up and running with claudekit in minutes!
 ## Installation
 
 ```bash
-npm install -g claudekit
+npm install -g claudekit-dev
 ```
 
 Or with other package managers:
 ```bash
-yarn global add claudekit
-pnpm add -g claudekit
+yarn global add claudekit-dev
+pnpm add -g claudekit-dev
 ```
 
 ## Initial Setup
@@ -174,7 +174,7 @@ claudekit provides powerful slash commands for Claude Code:
 echo '{"tool_input":{"file_path":"src/problematic.js"}}' | claudekit-hooks run lint-changed
 
 # Check hook configuration
-claudekit list --verbose
+claudekit list hooks
 ```
 
 ## Customizing Hooks

@@ -230,6 +230,38 @@ program
     }
   });
 
+// Upgrade command - check for and install newer version
+program
+  .command('upgrade')
+  .description('Check for newer version and upgrade claudekit')
+  .option('--check', 'only check for updates without installing')
+  .action(async (options) => {
+    try {
+      const mergedOptions = { ...globalOptions, ...options };
+      const { upgrade } = await import('./commands/upgrade.js');
+      await upgrade(mergedOptions);
+    } catch (error) {
+      logger.error(`Upgrade failed: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
+  });
+
+// Sync command - sync project components to match installed version
+program
+  .command('sync')
+  .description('Sync project components to match the installed claudekit version')
+  .option('--project <path>', 'target project directory')
+  .action(async (options) => {
+    try {
+      const mergedOptions = { ...globalOptions, ...options };
+      const { sync: syncComponents } = await import('./commands/sync.js');
+      await syncComponents(mergedOptions);
+    } catch (error) {
+      logger.error(`Sync failed: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
+  });
+
 // Function to run the CLI - only execute if this is the main module
 export async function runCli(): Promise<void> {
   // Register show commands

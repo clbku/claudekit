@@ -14,7 +14,7 @@ The thinking-level hook automatically adds thinking prompts to user queries befo
 
 ```bash
 # Install claudekit (if not already installed)
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # Add thinking-level hook to your project
 claudekit setup --yes --force --hooks thinking-level

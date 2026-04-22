@@ -38,39 +38,63 @@ claudekit setup --commands git:commit,spec:create --hooks typecheck-changed
 claudekit setup --user
 ```
 
-### `claudekit install`
-Install specific hooks and commands into your project.
+### `claudekit add <type> <name>`
+Add a hook or command to your project.
 
 ```bash
-claudekit install [component...] [options]
+claudekit add hook <name>     # Add a specific hook
+claudekit add command <name>  # Add a specific command
+```
 
-Options:
-  -t, --type <type>         Component type: hook, command, or all
-  -c, --category <category> Filter by category (e.g., validation, git)
-  --essential               Install only essential components
-  --dry-run                Show what would be installed
+### `claudekit remove <type> <name>`
+Remove a hook or command from your project.
 
-Examples:
-  claudekit install                    # Install all recommended
-  claudekit install typecheck eslint   # Install specific components
-  claudekit install --type command     # Install all commands
-  claudekit install --category git     # Install git-related components
+```bash
+claudekit remove hook <name>     # Remove a hook
+claudekit remove command <name>  # Remove a command
+```
+
+### `claudekit update <type> <name>`
+Update a hook or command to the latest version.
+
+```bash
+claudekit update hook <name>     # Update a hook
+claudekit update command <name>  # Update a command
 ```
 
 ### `claudekit list`
 List installed hooks, commands, and configuration.
 
 ```bash
-claudekit list [options]
+claudekit list [type]    # List: hooks, commands, agents, or all (default: all)
+claudekit list agents    # List available agents with token counts
+claudekit list commands  # List available commands with token counts
+```
 
-Options:
-  -t, --type <type>    List specific type: hooks, commands, or all
-  -v, --verbose        Show detailed information
+### `claudekit show <type> <id>`
+Display agent or command prompts for external use.
 
-Examples:
-  claudekit list                # Show all installed components
-  claudekit list --type hooks   # Show only hooks
-  claudekit list -v             # Show detailed information
+```bash
+claudekit show agent <id>              # Show agent prompt
+claudekit show command <id>            # Show command prompt
+claudekit show agent <id> -f json      # Output as JSON with metadata
+claudekit show command <id> -f json    # Output as JSON with metadata
+```
+
+### `claudekit status <subcommand>`
+Check status of integrated tools.
+
+```bash
+claudekit status stm    # Check Simple Task Master status
+```
+
+### `claudekit list`
+List available components.
+
+```bash
+claudekit list [type]     # hooks, commands, agents, or all
+claudekit list agents     # List agents with token counts
+claudekit list commands   # List commands with token counts
 ```
 
 ### `claudekit doctor`
@@ -99,11 +123,14 @@ Manage and execute the embedded hooks system.
 claudekit-hooks <command> [options]
 
 Commands:
-  run <hook>      Run a specific hook
-  list            List all available hooks
-  stats           Show hook execution statistics
-  recent [limit]  Show recent hook executions (default: 20)
-  profile [hook]  Profile hook performance (time and output)
+  run <hook>              Run a specific hook
+  list                    List all available hooks
+  stats                   Show hook execution statistics
+  recent [limit]          Show recent hook executions (default: 20)
+  profile [hook]          Profile hook performance (time and output)
+  disable <hook-name>     Disable hook for current session
+  enable <hook-name>      Re-enable hook for current session
+  status [hook-name]      Show hook status (enabled/disabled)
 
 Options:
   --config <path>  Path to config file (default: .claudekit/config.json)
@@ -148,20 +175,16 @@ claudekit-hooks run create-checkpoint
 
 ## Linting Commands
 
-### `claudekit lint-subagents`
-Validate subagent markdown files for proper frontmatter and structure.
-
 ```bash
-claudekit lint-subagents [directory] [options]
+claudekit lint-agents [directory] [options]
 
 Options:
   -q, --quiet      Suppress suggestions, show only errors
   -v, --verbose    Show all files including valid ones
 
 Examples:
-  claudekit lint-subagents              # Lint .claude/agents
-  claudekit lint-subagents src/agents   # Lint specific directory
-  claudekit lint-subagents -q           # Only show errors
+  claudekit lint-agents              # Lint .claude/agents
+  claudekit lint-agents src/agents   # Lint specific directory
 ```
 
 **What it checks:**
@@ -195,7 +218,7 @@ Examples:
 
 ## Global Installation
 
-When installed globally (`npm install -g claudekit`), commands are available system-wide:
+When installed globally (`npm install -g claudekit-dev`), commands are available system-wide:
 
 ```bash
 # Available from any directory
@@ -257,7 +280,7 @@ CLAUDEKIT_DEBUG=1 claudekit-hooks run typecheck-changed
 ### Initial Setup
 ```bash
 # 1. Install claudekit globally
-npm install -g claudekit
+npm install -g claudekit-dev
 
 # 2. Navigate to your project
 cd my-project
@@ -271,9 +294,12 @@ claudekit doctor
 
 ### Adding to Existing Project
 ```bash
-# Add specific features to existing project
-claudekit install --type hooks --category validation
-claudekit install git:commit checkpoint:create
+# Add specific hooks or commands
+claudekit add hook typecheck-changed
+claudekit add command git:commit
+
+# Or re-run setup with specific flags
+claudekit setup --hooks typecheck-changed,lint-changed
 ```
 
 ### Debugging Issues

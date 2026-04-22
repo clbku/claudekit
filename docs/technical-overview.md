@@ -1159,7 +1159,7 @@ Session-based context provider that generates and injects codebase structure ove
 
 **Triggers**: `SessionStart` and `UserPromptSubmit` events with universal matcher
 
-**Implementation**: Generates codebase map using configurable include/exclude patterns and format options, implements session tracking to prevent duplicate context injection, includes performance limits and truncation for large codebases, supports both DSL and tree output formats
+**Implementation**: Generates codebase map using configurable include/exclude patterns and format options, auto-detects package manager to resolve `codebase-map` CLI (npx/yarn dlx/pnpm dlx), implements session tracking to prevent duplicate context injection, includes performance limits and truncation for large codebases, supports both DSL and tree output formats
 
 **Behavior**: Provides context once per session with 9000 character limit for UserPromptSubmit events, sessions are tracked to avoid duplicate injection, graceful fallback on generation failures without blocking user workflow
 
@@ -1169,7 +1169,7 @@ Incremental codebase map updater that maintains index freshness by updating spec
 
 **Triggers**: `PostToolUse` events matching `Write|Edit|MultiEdit`
 
-**Implementation**: Debounces updates with 5-second delay, filters for code file extensions (ts, tsx, js, jsx, mjs, cjs), updates specific files in codebase-map index rather than full regeneration, silent failure handling to avoid workflow disruption
+**Implementation**: Debounces updates with 5-second delay, filters for code file extensions (ts, tsx, js, jsx, mjs, cjs), auto-resolves codebase-map CLI via package manager, updates specific files in codebase-map index rather than full regeneration, silent failure handling to avoid workflow disruption
 
 **Behavior**: Updates index file incrementally without interrupting development workflow, skips updates if codebase-map tool unavailable or no index exists, maintains index accuracy for subsequent session starts
 

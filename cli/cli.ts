@@ -71,6 +71,7 @@ program
   .option('--project <path>', 'target directory for project installation')
   .option('--user', 'install in user directory (~/.claude) instead of project')
   .option('--select-individual', 'use legacy individual component selection instead of groups')
+  .option('--statusline', 'install the claudekit statusline at user level (~/.claude)')
   .action(async (options) => {
     try {
       const mergedOptions = { ...globalOptions, ...options };
@@ -258,6 +259,20 @@ program
       await syncComponents(mergedOptions);
     } catch (error) {
       logger.error(`Sync failed: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
+  });
+
+// Tokens command - count token usage of current session
+program
+  .command('tokens')
+  .description('Count token usage of the current Claude Code session')
+  .action(async () => {
+    try {
+      const { tokens } = await import('./commands/tokens.js');
+      await tokens();
+    } catch (error) {
+      logger.error(`Tokens failed: ${error instanceof Error ? error.message : String(error)}`);
       process.exit(1);
     }
   });

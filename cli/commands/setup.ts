@@ -26,6 +26,7 @@ import {
   type AgentComponent,
 } from '../lib/agents/registry-grouping.js';
 import { HOOK_REGISTRY } from '../hooks/registry.js';
+import { installStatusline } from '../lib/statusline.js';
 
 // Command group definitions for improved setup flow
 interface CommandGroup {
@@ -404,6 +405,7 @@ export interface SetupOptions {
   selectIndividual?: boolean; // Flag for power users to select individual components
   all?: boolean;
   skipAgents?: boolean;
+  statusline?: boolean;
 }
 
 interface SetupConfig {
@@ -438,6 +440,17 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
       options.hooks !== undefined ||
       options.agents !== undefined ||
       options.user === true;
+
+    // Shortcut: --statusline alone only installs statusline
+    if (options.statusline === true && !isNonInteractive) {
+      console.log(Colors.bold(Colors.accent('\nclaudekit Statusline Setup')));
+      console.log(Colors.dim('─'.repeat(40)));
+      await installStatusline({ force: options.force, quiet: options.quiet });
+      console.log(Colors.dim(`\n${'─'.repeat(40)}`));
+      console.log('\nNext steps:');
+      console.log('  Start a new Claude Code session to see the statusline in action.');
+      return;
+    }
 
     // Show welcome message (unless in non-interactive mode)
     if (!isNonInteractive || options.quiet !== true) {
@@ -733,7 +746,23 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
       // Agents are now part of the unified component system, no special handling needed
     }
 
-    // Step 5: Set configuration based on selected components
+    // Step 5: Statusline (Optional)
+    let shouldInstallStatusline = options.statusline === true;
+    if (options.statusline !== true && !isNonInteractive) {
+      console.log(`\n${Colors.bold('Step 4: Configure Statusline (Optional)')}`);
+      console.log(
+        Colors.dim(
+          'Shows: git branch+status, model, context%, tokens in Claude Code terminal'
+        )
+      );
+      console.log(Colors.dim('Installs to: ~/.claude/ (user-level only)'));
+      shouldInstallStatusline = await confirm({
+        message: 'Install the claudekit statusline?',
+        default: false,
+      });
+    }
+
+    // Step 6: Set configuration based on selected components
     // These are now determined by which hooks/commands the user selected
     const autoCheckpoint = selectedComponents.includes('create-checkpoint');
     const validateTodos = selectedComponents.includes('check-todos');
@@ -790,6 +819,10 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
             console.log(`  • ${componentFile.metadata.name}`);
           }
         });
+      }
+
+      if (shouldInstallStatusline) {
+        console.log(`\nStatusline: ${Colors.success('Yes')} (user-level)`);
       }
     }
 
@@ -967,6 +1000,12 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
 
       // Agents are now installed as part of the unified component system
 
+      // Install statusline at user level (always, regardless of installation type)
+      if (shouldInstallStatusline) {
+        progressReporter.update('Installing statusline...');
+        await installStatusline({ force: options.force, quiet: options.quiet });
+      }
+
       progressReporter.succeed('Installation complete!');
 
       // Clean up settings backup file if it was created
@@ -1001,7 +1040,7 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
 
         console.log(`\n${Colors.bold(Colors.success('✨ Setup complete!'))}`);
 
-        if (totalInstalled > 0) {
+        if (totalInstalled > 0 || shouldInstallStatusline) {
           console.log(`\n${Colors.bold('Installed items:')}`);
           if (commandCount > 0) {
             console.log(`• ${commandCount} slash command${commandCount !== 1 ? 's' : ''}`);
@@ -1011,6 +1050,9 @@ export async function setup(options: SetupOptions = {}): Promise<void> {
           }
           if (finalAgentCount > 0) {
             console.log(`• ${finalAgentCount} AI subagent${finalAgentCount !== 1 ? 's' : ''}`);
+          }
+          if (shouldInstallStatusline) {
+            console.log('• Statusline (user-level)');
           }
         } else {
           console.log(`\n${Colors.warn('No items were selected for installation.')}`);
